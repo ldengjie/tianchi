@@ -1,5 +1,6 @@
 #
 *.csv
+!tc_comp_predict_table.csv
 # Compiled Object files
 *.slo
 *.lo
