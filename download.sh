@@ -1,6 +1,6 @@
 wget -O mfd_bank_shibor.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/mfd_bank_shibor.csv?Expires=1432288414&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=kJSSmi2lg1%2FD8nyVxxAu8jkGjtc%3D"
 
-wget -O mdf_day_share_interest.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/mfd_day_share_interest.csv?Expires=1432288632&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=7ppbPATMeMsNf%2FEQodSjTase%2FfA%3D"
+wget -O mfd_day_share_interest.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/mfd_day_share_interest.csv?Expires=1432288632&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=7ppbPATMeMsNf%2FEQodSjTase%2FfA%3D"
 
 wget -O user_balance_table.zip "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/user_balance_table.zip?Expires=1432288635&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=q6GBZ86uAP97nogbg15BOpUc3CY%3D"
 
