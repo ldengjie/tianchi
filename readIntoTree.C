@@ -22,15 +22,16 @@
             Long64_t originDate;
             int year,month,day;
             csvTree[i]->SetBranchAddress(Form("%s",unixTimeName[i].c_str()),&originDate);
+            struct tm tm1;
+            memset(&tm1, 0, sizeof(tm1));
             for( int ei=0 ; ei<entryNum ; ei++ )
             {
-                 csvTree[i]->GetEntry(ei);
-                 year=originDate/10000;
-                 month=originDate%10000/100;
-                 day=originDate%10000%100;
-                 TTimeStamp* unixStamp=new TTimeStamp(year,month,day,12,0,0,0);
-                 unixTime[i]=unixStamp->GetSec();
-                 unixBranch[i]->Fill();
+                csvTree[i]->GetEntry(ei);
+                tm1.tm_year = originDate/10000- 1900;
+                tm1.tm_mon  = originDate%10000/100- 1;
+                tm1.tm_mday = originDate%10000%100;
+                unixTime[i]= mktime(&tm1);
+                unixBranch[i]->Fill();
             }
         }
 

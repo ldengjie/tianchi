@@ -251,14 +251,5 @@
             h2totalUsrCate[i][catei]->SetLineColor(catei+1);
             h2totalUsrCate[i][catei]->Draw("sameC");
         }
-
-        //draw histogram for each category 
-            for( int ci=1 ; ci<=4 ; ci++ )
-            {
-                c->cd(i*5+ci+1);
-                for( int gi=0 ; gi<9 ; gi++ )
-                {
-                }
-            }
     }
 }
