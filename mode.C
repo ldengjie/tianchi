@@ -4,10 +4,10 @@
     gStyle->SetOptStat(0);
     gStyle->SetLegendBorderSize(0);
 
-    bool anaRedeem=1;//otherwise purchase 
+    bool anaRedeem=0;//otherwise purchase 
 
-    Long64_t fitLowDate=20140312;
-    Long64_t fitHighDate=20140828;
+    Long64_t lowFitDate=20140312;
+    Long64_t highFitDate=20140828;
     string fitFunc="expo";
     int paraNum=2;
     double x[1000]={0.};
@@ -17,10 +17,38 @@
     Long64_t timeBinNum=490;//490 day,70 week,16 month
     Long64_t lowDate=20130602;
     Long64_t highDate=20141005;
-    const int binNum=500;//should be more than "timeBinNum"
+    const int maxBinNum=500;//should be more than "timeBinNum"
     const int maxHolidayNum=30;
     const int maxMonthNum=30;
-    const int maxPreAndAftNum=10;//maximum of pre,aft,length of  holiday(guoqing=7)
+    const int maxPreAndAftNum=100;//maximum of pre,aft,length of  holiday(guoqing=7)
+
+    int preMonth=10;
+    int aftMonth=10;
+    int preHoliday=10;
+    int aftHoliday=10;
+
+    typedef struct ScanPara
+    {
+        double* ref;
+        double low;
+        double high;
+        double step;
+        double optVal;
+        double oriVal;
+        double minChi2ndf;
+        int tag;
+        ScanPara()
+        {
+            ref=NULL;
+            low=-1;
+            high=1;
+            step=0.0001;//
+            minChi2ndf=999;
+            optVal=0.;
+            oriVal=0.;
+        }
+    }sc;
+    sc sco[500];
 
     TFile* f=new TFile("tianChiOriginData.root","read");
 
@@ -85,17 +113,15 @@
 
     //==> remove month pre-aft
 
-    int preMonth=5;
-    int aftMonth=5;
-    Long64_t  needRemoveMonth[binNum]={0};
-    //Long64_t* needRemoveMonth=initLA(binNum);
-    Long64_t  monthInfo[binNum];
-    for( int mi=0 ; mi<binNum ; mi++ )
+    Long64_t  needRemoveMonth[maxBinNum]={0};
+    //Long64_t* needRemoveMonth=initLA(maxBinNum);
+    Long64_t  monthInfo[maxBinNum];
+    for( int mi=0 ; mi<maxBinNum ; mi++ )
     {
         monthInfo[mi]=999;
     }
     
-    Long64_t monthNum=0;
+    Long64_t monthVetoedNum=0;
     int monthBin[maxMonthNum];
     int monthCount=0;
     for( Long64_t bi=1 ; bi<=timeBinNum ; bi++ )
@@ -109,24 +135,22 @@
             for( int  aft=0 ; aft<aftMonth ; aft++ )
             {
                 needRemoveMonth[bi+aft]=1;
-                monthNum++;
+                monthVetoedNum++;
                 monthInfo[bi+aft]=aft;
             }
             for( int pre=1 ; pre<=preMonth ; pre++ )
             {
                 needRemoveMonth[bi-pre]=1;
-                monthNum++;
+                monthVetoedNum++;
                 monthInfo[bi-pre]=-pre;
             }
 
         }
     }
-    cout<<"monthNum  : "<<monthNum<<endl;
+    cout<<"monthVetoedNum  : "<<monthVetoedNum<<endl;
 
 
     //==> remove holiday
-    int preHoliday=3;
-    int aftHoliday=3;
     Long64_t holidayDate[32]={
         20130813, 1,
         20130910, 1,
@@ -147,13 +171,13 @@
         20141001, 7
     };
     //TH1D* purTotalRemoveHoliday=new TH1D("purTotalRemoveHoliday","purTotalRemoveHoliday",timeBinNum,timeLowEdge,timeHighEdge);
-    Long64_t  needRemoveHoliday[binNum]={0};
-    Long64_t  holidayInfo[binNum];
-    for( int hi=0 ; hi<binNum ; hi++ )
+    Long64_t  needRemoveHoliday[maxBinNum]={0};
+    Long64_t  holidayInfo[maxBinNum];
+    for( int hi=0 ; hi<maxBinNum ; hi++ )
     {
         holidayInfo[hi]=999;
     }
-    Long64_t holidayNum=0;
+    Long64_t holidayVetoedNum=0;
     int col=sizeof(holidayDate)/sizeof(holidayDate[0])/2;
     int colNow=0;
     int holidayFirstBin[maxHolidayNum];
@@ -175,26 +199,31 @@
             if( binLowEdge>=timeTmp&&(binLowEdge<timeTmp+holidayDate[hi*2+1]*86400)  )
             {
                 //cout<<"find one "<<endl; 
-                holidayNum++;
+                holidayVetoedNum++;
                 needRemoveHoliday[bi]=1;
                 holidayInfo[bi]=0;
                 for( int pre=1 ; pre<=preHoliday ; pre++ )
                 {
-                    needRemoveHoliday[bi-pre]=1;
-                    if(holidayInfo[bi-pre]==999)holidayInfo[bi-pre]=-pre;
+                    if( bi-pre>=1 )
+                    {
+                        needRemoveHoliday[bi-pre]=1;
+                        if(holidayInfo[bi-pre]==999)holidayInfo[bi-pre]=-pre;
+                    }
                 }
                 for( int  aft=1 ; aft<=aftHoliday ; aft++ )
                 {
-                    needRemoveHoliday[bi+aft]=1;
-                    holidayInfo[bi+aft]=aft;
+                    if( bi+aft<=timeBinNum )
+                    {
+                        needRemoveHoliday[bi+aft]=1;
+                        holidayInfo[bi+aft]=aft;
+                    }
                 }
                 break;
             }
 
         }
     }
-    cout<<"holidayNum  : "<<holidayNum<<endl;
-
+    cout<<"holidayVetoedNum  : "<<holidayVetoedNum<<endl;
 
 
     //c->cd(1);
@@ -211,9 +240,9 @@
     cout<<" "<<endl;
     cout<<" Fitter information :  "<<endl;
     Long64_t purFitNum=0;
-    Long64_t tmp=coverTime2unix(fitLowDate);
+    Long64_t tmp=coverTime2unix(lowFitDate);
     Long64_t firstFitBin=purTotal->FindBin(tmp);
-    tmp=coverTime2unix(fitHighDate);
+    tmp=coverTime2unix(highFitDate);
     Long64_t lastFitBin=purTotal->FindBin(tmp);
     cout<<"firstFitBin-lastFitBin  : "<<firstFitBin<<"-"<<lastFitBin<<endl;
     for( Long64_t puri=firstFitBin ; puri<=lastFitBin ; puri++ )
@@ -241,6 +270,18 @@
 
 
     //==> variation inside one week
+    Long64_t  weekInfo[maxBinNum];
+    for( int wi=0 ; wi<maxBinNum ; wi++ )
+    {
+        weekInfo[wi]=999;
+    }
+    for( int bi=1 ; bi<timeBinNum ; bi++ )
+    {
+        time_t timep=purTotal->GetBinLowEdge(bi);
+        struct tm *p =localtime(&timep);
+        weekInfo[bi]=p->tm_wday;
+    }
+    
     int weekDayNum[7]={0};
     double weekDayRatio[7]={0.};
     double weekDayRatioErr2[7]={0.};
@@ -250,11 +291,10 @@
         {
             double purContent=purTotal->GetBinContent(puri);
             time_t timep=purTotal->GetBinLowEdge(puri);
-            struct tm *p =localtime(&timep);
             double funcValue=purf->Eval(timep);
-            weekDayNum[p->tm_wday]++;
-            weekDayRatio[p->tm_wday]+=(purContent-funcValue)/funcValue;
-            weekDayRatioErr2[p->tm_wday]+=(purContent+funcValue)/funcValue/funcValue*(1+(purContent+funcValue)/funcValue);
+            weekDayNum[weekInfo[puri]]++;
+            weekDayRatio[weekInfo[puri]]+=(purContent-funcValue)/funcValue;
+            weekDayRatioErr2[weekInfo[puri]]+=(purContent+funcValue)/funcValue/funcValue*(1+(purContent+funcValue)/funcValue);
         }
     }
     cout<<" "<<endl;
@@ -287,8 +327,7 @@
             {
                 double purContent=purTotal->GetBinContent(monthBin[mi]-prei);
                 time_t timep=purTotal->GetBinLowEdge(monthBin[mi]-prei);
-                struct tm *p =localtime(&timep);
-                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[p->tm_wday]);
+                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[weekInfo[monthBin[mi]-prei]]);
                 preMonthRatio[prei-1]+=(purContent-expectedValue)/expectedValue;
                 preMonthRatioErr2[prei-1]+=(purContent+expectedValue)/expectedValue/expectedValue*(1+(purContent+expectedValue)/expectedValue);
                 preMonthRatioCount[prei-1]++;
@@ -300,8 +339,7 @@
             {
                 double purContent=purTotal->GetBinContent(monthBin[mi]+afti);
                 time_t timep=purTotal->GetBinLowEdge(monthBin[mi]+afti);
-                struct tm *p =localtime(&timep);
-                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[p->tm_wday]);
+                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[weekInfo[monthBin[mi]+afti]]);
                 aftMonthRatio[afti]+=(purContent-expectedValue)/expectedValue;
                 aftMonthRatioErr2[afti]+=(purContent+expectedValue)/expectedValue/expectedValue*(1+(purContent+expectedValue)/expectedValue);
                 aftMonthRatioCount[afti]++;
@@ -354,8 +392,7 @@
             {
                 double purContent=purTotal->GetBinContent(holidayFirstBin[hi]-prei);
                 time_t timep=purTotal->GetBinLowEdge(holidayFirstBin[hi]-prei);
-                struct tm *p =localtime(&timep);
-                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[p->tm_wday]);
+                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[weekInfo[holidayFirstBin[hi]-prei]]);
                 expectedPurOnlyCorWeek->SetBinContent(holidayFirstBin[hi]-prei,expectedValue);
                 preHolidayRatio[hi][prei-1]=(purContent-expectedValue)/expectedValue;
                 preHolidayRatioErr2[hi][prei-1]=(purContent+expectedValue)/expectedValue/expectedValue*(1+(purContent+expectedValue)/expectedValue);
@@ -370,8 +407,7 @@
             {
                 double purContent=purTotal->GetBinContent(hoi);
                 time_t timep=purTotal->GetBinLowEdge(hoi);
-                struct tm *p =localtime(&timep);
-                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[p->tm_wday]);
+                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[weekInfo[hoi]]);
                 expectedPurOnlyCorWeek->SetBinContent(hoi,expectedValue);
                 holidayRatio[hi][calCount]=(purContent-expectedValue)/expectedValue;
                 holidayRatioErr2[hi][calCount]=(purContent+expectedValue)/expectedValue/expectedValue*(1+(purContent+expectedValue)/expectedValue);
@@ -388,8 +424,7 @@
             {
                 double purContent=purTotal->GetBinContent(holidayLastBin[hi]+afti);
                 time_t timep=purTotal->GetBinLowEdge(holidayLastBin[hi]+afti);
-                struct tm *p =localtime(&timep);
-                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[p->tm_wday]);
+                double expectedValue=purf->Eval(timep)*(1+weekDayRatio[weekInfo[holidayLastBin[hi]+afti]]);
                 expectedPurOnlyCorWeek->SetBinContent(holidayLastBin[hi]+afti,expectedValue);
                 aftHolidayRatio[hi][afti-1]=(purContent-expectedValue)/expectedValue;
                 aftHolidayRatioErr2[hi][afti-1]=(purContent+expectedValue)/expectedValue/expectedValue*(1+(purContent+expectedValue)/expectedValue);
@@ -473,6 +508,128 @@
     //c->cd(2);
     expectedPurOnlyCorWeek->SetLineColor(kGreen);
     //expectedPurOnlyCorWeek->Draw("same");
+    //
+    //++++++++++++ scan each parameter ++++++++++++
+    double realValue[maxBinNum]={0.};
+    double calValue[maxBinNum]={0.};
+    for( int bi=1 ; bi<timeBinNum ; bi++ )
+    {
+        realValue[bi]=purTotal->GetBinContent(bi);
+    }
+    Long64_t lowScanDate=lowFitDate;
+    Long64_t highScanDate=highFitDate;
+    Long64_t timeTmp=coverTime2unix(lowScanDate);
+    int lowScanBin=purTotal->FindBin(timeTmp);
+    timeTmp=coverTime2unix(highScanDate);
+    int highScanBin=purTotal->FindBin(timeTmp);
+    double zero=0.;
+    double* monthCorP[maxBinNum];
+    double* holidayCorP[maxBinNum];
+    double tfValue[maxBinNum]={0.};
+    int ndf=highScanBin-lowScanBin+1;
+    for( int bi=lowScanBin ; bi<=highScanBin ; bi++ )
+    {
+        //double weekCor=1+weekDayRatio[weekInfo[bi]];
+        double monthCor=0;
+        if( monthInfo[bi]<999 )
+        {
+            if( monthInfo[bi]<0 )
+            {
+                monthCorP[bi]=&preMonthRatio[-monthInfo[bi]-1];
+            }else
+            {
+                monthCorP[bi]=&aftMonthRatio[monthInfo[bi]];
+            }
+        }else
+        {
+            monthCorP[bi]=&zero;
+        }
+        double holidayCor=0;
+        if( holidayInfo[bi]<999 )
+        {
+            if( holidayInfo[bi]<0 )
+            {
+                holidayCorP[bi]=&preHolidayRatioMean[-holidayInfo[bi]-1];
+            }else if(holidayInfo[bi]>0)
+            {
+                holidayCorP[bi]=&aftHolidayRatioMean[holidayInfo[bi]-1];
+            }else
+            {
+                holidayCorP[bi]=&holidayRatioMean[0];
+            }
+        }else
+        {
+            holidayCorP[bi]=&zero;
+        }
+        time_t timep=purTotal->GetBinLowEdge(bi);
+        tfValue[bi]=purf->Eval(timep);
+    }
+    //weekDayRatio[0...6],preMonthRatio[0...preMonth-1],aftMonthRatio[0...aftMonth]
+    //preHolidayRatioMean[0...preHoliday],aftHolidayRatioMean[0...aftHoliday],holidayRatioMean[0]
+    int scanParaNum=0;
+    for( int wi=0 ; wi<7 ; wi++ )
+    {
+        sco[scanParaNum].tag=wi;
+        sco[scanParaNum].oriVal=weekDayRatio[wi]; 
+        sco[scanParaNum++].ref=&weekDayRatio[wi];
+    }
+    for( int mi=0 ; mi<preMonth ; mi++ )
+    {
+        sco[scanParaNum].tag=-(mi+1);
+        sco[scanParaNum].oriVal=preMonthRatio[mi];
+        sco[scanParaNum++].ref=&preMonthRatio[mi];
+    }
+    for( int mi=0 ; mi<aftMonth ; mi++ )
+    {
+        sco[scanParaNum].tag=(mi);
+        sco[scanParaNum].oriVal=aftMonthRatio[mi];
+        sco[scanParaNum++].ref=&aftMonthRatio[mi];
+    }
+    for( int hi=0 ; hi<preHoliday ; hi++ )
+    {
+        sco[scanParaNum].tag=-(hi+1);
+        sco[scanParaNum].oriVal=preHolidayRatioMean[hi];
+        sco[scanParaNum++].ref=&preHolidayRatioMean[hi];
+    }
+    for( int hi=0 ; hi<aftHoliday ; hi++ )
+    {
+        sco[scanParaNum].tag=(hi+1);
+        sco[scanParaNum].oriVal=aftHolidayRatioMean[hi];
+        sco[scanParaNum++].ref=&aftHolidayRatioMean[hi];
+    }
+    sco[scanParaNum].tag=0;
+    sco[scanParaNum].oriVal=holidayRatioMean[0];
+    sco[scanParaNum++].ref=&holidayRatioMean[0];
+
+    cout<<"scanParaNum  : "<<scanParaNum<<endl;
+    for( int li=1 ; li<=30 ; li++ )
+    {
+        cout<<"loop  : "<<li<<endl;
+        //for( int pi=0 ; pi<7; pi++ )
+        for( int pi=0 ; pi<scanParaNum ; pi++ )
+        {
+            for( double si=sco[pi].low ; si<=sco[pi].high ; si+=sco[pi].step )
+            {
+                *(sco[pi].ref)=si;
+                double chi2=0.;
+                for( int bi=lowScanBin ; bi<=highScanBin ; bi++ )
+                {
+                    calValue[bi]=(tfValue[bi])*(1+weekDayRatio[weekInfo[bi]])*(1+(*monthCorP[bi]))*(1+(*holidayCorP[bi]));
+                    chi2+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi])/realValue[bi];
+                }
+                chi2/=ndf;
+                if( chi2<sco[pi].minChi2ndf||sco[pi].minChi2ndf==999 )
+                {
+                    sco[pi].minChi2ndf=chi2;
+                    sco[pi].optVal=si;
+                }
+            }
+            *(sco[pi].ref)=sco[pi].optVal;
+            if(li>=29) cout<<" "<<sco[pi].tag <<" : "<<sco[pi].oriVal<<" -> "<<sco[pi].optVal<<endl;
+
+        }
+
+    }
 
 
     //==> expected purchase 
@@ -482,7 +639,7 @@
     //double minVal=purTotal->GetBinContent(purTotal->GetMinimumBin(firstFitBin,lastFitBin,0));
     double minVal=100000000;
     cout<<" "<<endl;
-    cout<<"Correction information :  "<<endl;
+    //cout<<"Correction information :  "<<endl;
     for( int bi=1 ; bi<=timeBinNum ; bi++ )
     {
         if( monthInfo[bi]<999 )
@@ -498,8 +655,7 @@
         if( bi>=firstFitBin )
         {
             time_t timep=purTotal->GetBinLowEdge(bi);
-            struct tm *p =localtime(&timep);
-            double weekCor=1+weekDayRatio[p->tm_wday];
+            double weekCor=1+weekDayRatio[weekInfo[bi]];
             double monthCor=0;
             if( monthInfo[bi]<999 )
             {
@@ -528,14 +684,14 @@
             }
             holidayCor+=1;
             double expectedValue=purf->Eval(timep)*weekCor*monthCor*holidayCor;
-            //double expectedValue=purf->Eval(timep)*(1+weekDayRatio[p->tm_wday])*(1+preHolidayRatioMean[prei]);
             expectedPur->SetBinContent(bi,expectedValue);
             Long64_t dataTmp=coverTime2Date(timep);
-            cout<<" "<< dataTmp<<"   : "<< weekCor*monthCor*holidayCor<<"="<<weekCor<<"*"<<monthCor<<"*"<<holidayCor<<" "<<purf->Eval(timep)<<" -> "<<expectedValue<<endl;
-        }else
-        {
-            expectedPur->SetBinContent(bi,purTotal->GetBinContent(bi));
+            //cout<<" "<< dataTmp<<"   : "<< weekCor*monthCor*holidayCor<<"="<<weekCor<<"*"<<monthCor<<"*"<<holidayCor<<" "<<purf->Eval(timep)<<" -> "<<expectedValue<<endl;
         }
+        //else
+        //{
+        //expectedPur->SetBinContent(bi,purTotal->GetBinContent(bi));
+        //}
     }
     expectedPur->SetLineColor(kRed);
     expectedPur->Draw("same");
