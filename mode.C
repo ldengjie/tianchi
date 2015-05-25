@@ -4,7 +4,7 @@
     gStyle->SetOptStat(0);
     gStyle->SetLegendBorderSize(0);
 
-    bool anaRedeem=0;//otherwise purchase 
+    bool anaRedeem=1;//otherwise purchase 
 
     Long64_t lowFitDate=20140312;
     Long64_t highFitDate=20140828;
