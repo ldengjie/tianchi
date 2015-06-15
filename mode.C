@@ -11,7 +11,7 @@
     cout<<"=== begin to analize [ "<< anaStr[anaRedeem]<<" ] ==="<<endl;
 
     //Long64_t lowFitDate=20140312;
-    Long64_t lowFitDate=20140315;
+    Long64_t lowFitDate=20140312;
     Long64_t highFitDate=20140831;
     string fitFunc="expo";
     //string fitFunc="expo(0)+pol1(2)";
@@ -28,10 +28,12 @@
     const int maxMonthNum=30;
     const int maxPreAndAftNum=100;//maximum of pre,aft,length of  holiday(guoqing=7)
 
-    int preMonth=5;
-    int aftMonth=5;
-    int preHoliday=5;
-    int aftHoliday=5;
+    int minPreAft=0;
+    int maxPreAft=7;
+    //int preMonth=5;
+    //int aftMonth=5;
+    //int preHoliday=5;
+    //int aftHoliday=5;
 
     typedef struct ScanPara
     {
@@ -104,26 +106,28 @@
     Long64_t balancePerDay[28367]={0};
     double frePerDay[28367]={0};
     Long64_t usrJoinTime[28367]={0};
-    int lowStatDate=20140401;
-    int highStatDate=20140831;
+    //int lowStatDate=20140401;
+    //int highStatDate=20140831;
+    int lowStatDate=lowFitDate;
+    int highStatDate=highFitDate;
     Long64_t lowStatTime=coverTime2unix(lowStatDate);
     Long64_t highStatTime=coverTime2unix(highStatDate);
     Long64_t statDays=(highStatTime-lowStatTime)/86400;
     for( int ubti=0 ; ubti<ubtNum ; ubti++ )
     {
-       user_balance_table->GetEntry(ubti); 
-       if( report_date_unix>=lowStatTime&&report_date_unix<=highStatTime )
-       {
-           totalBalance[user_id]+=direct_purchase_amt;
-       }
-       if( direct_purchase_amt>0 && report_date_unix>=lowStatTime&&report_date_unix<=highStatTime )
-       {
-           totalNum[user_id]+=1;
-       }
-       if( usrJoinTime[user_id]==0||(usrJoinTime[user_id]!=0&&usrJoinTime[user_id]>report_date_unix))
-       {
-           usrJoinTime[user_id]=report_date_unix;
-       }
+        user_balance_table->GetEntry(ubti); 
+        if( report_date_unix>=lowStatTime&&report_date_unix<=highStatTime )
+        {
+            totalBalance[user_id]+=direct_purchase_amt;
+        }
+        if( direct_purchase_amt>0 && report_date_unix>=lowStatTime&&report_date_unix<=highStatTime )
+        {
+            totalNum[user_id]+=1;
+        }
+        if( usrJoinTime[user_id]==0||(usrJoinTime[user_id]!=0&&usrJoinTime[user_id]>report_date_unix))
+        {
+            usrJoinTime[user_id]=report_date_unix;
+        }
     }
     for( int upti=0 ; upti<28367 ; upti++ )
     {
@@ -136,19 +140,24 @@
         frePerDay[upti]=(double)totalNum[upti]/voliadDays;
     }
     const int cateNum=3;
+    int businessBoundary=4;
     Long64_t cateColor[cateNum]={2,3,4};
     Long64_t usrCategory[28367]={0};
+    TH1D* hUsrCategory=new TH1D("hUsrCategory","hUsrCategory",cateNum,1,cateNum+1);
     for( int upti=0 ; upti<28367 ; upti++ )
     {
-        if( frePerDay[upti]*31<2 && balancePerDay[upti]*31<300000 )
+        if( frePerDay[upti]*31<1 && balancePerDay[upti]*31<100000 )
         {
             usrCategory[upti]=1;
-        } else if( frePerDay[upti]*31>=4 )
+            hUsrCategory->Fill(1);
+        } else if( frePerDay[upti]*31>=businessBoundary )
         {
             usrCategory[upti]=3;
+            hUsrCategory->Fill(3);
         }else
         {
             usrCategory[upti]=2;
+            hUsrCategory->Fill(2);
         }
     }
 
@@ -160,14 +169,14 @@
     TH1D* purCate[cateNum];
     for( int pi=0 ; pi<cateNum ; pi++ )
     {
-       purCate[pi]=new TH1D(Form("purCate%i",pi+1),"purCate",timeBinNum,timeLowEdge,timeHighEdge); 
+        purCate[pi]=new TH1D(Form("purCate%i",pi+1),"purCate",timeBinNum,timeLowEdge,timeHighEdge); 
     }
     TH1D* expectedPurCate[cateNum];
     for( int pi=0 ; pi<cateNum ; pi++ )
     {
-       expectedPurCate[pi]=new TH1D(Form("expectedPurCate%i",pi+1),"expectedPurCate",timeBinNum,timeLowEdge,timeHighEdge); 
+        expectedPurCate[pi]=new TH1D(Form("expectedPurCate%i",pi+1),"expectedPurCate",timeBinNum,timeLowEdge,timeHighEdge); 
     }
-    
+
     Long64_t* data=&total_purchase_amt;
     if( anaRedeem)
     {
@@ -246,7 +255,7 @@
     {
         weekInfo[wi]=999;
     }
-    for( int bi=1 ; bi<timeBinNum ; bi++ )
+    for( int bi=1 ; bi<=timeBinNum ; bi++ )
     {
         time_t timep=purTotal->GetBinLowEdge(bi);
         struct tm *p =localtime(&timep);
@@ -293,16 +302,14 @@
         TF1* purf=new TF1("purf",Form("%s",fitFunc.c_str()),lowFitUnix,highFitUnix+86400);
         double realValue[maxBinNum]={0.};
         double calValue[maxBinNum]={0.};
-        for( int bi=1 ; bi<timeBinNum ; bi++ )
+        for( int bi=1 ; bi<=timeBinNum ; bi++ )
         {
             realValue[bi]=purCate[ri]->GetBinContent(bi);
         }
         int optPreAft[4];
         double optPar[1000]={0.};
-        //double minChi2=999;
+        double minChi2=999;
         int pmi,ami,phi,ahi;
-        int minPreAft=0;
-        int maxPreAft=7;
         int scanParaNum=0;
 
         for( int pmi=minPreAft ; pmi<=maxPreAft; pmi++ )
@@ -313,7 +320,7 @@
                 {
                     for( int ahi=minPreAft ; ahi<=maxPreAft; ahi++ )
                     {
-                        double minChi2=999;
+                        //double minChi2=999;
                         cout<<"pmi~ami~phi~ahi  : "<<pmi<<"~"<<ami<<"~"<<phi<<"~"<<ahi<<endl;
 
                         //==> veto before and after month for fitting
@@ -517,6 +524,7 @@
                             chi2Tmp+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
                         }
                         chi2Tmp/=ndf;
+                        //cout<<"chi2Tmp  : "<<chi2Tmp<<"   minChi2:"<<minChi2<<endl;
                         if( minChi2==999 ||chi2Tmp<minChi2)
                         {
                             minChi2=chi2Tmp;
@@ -545,6 +553,7 @@
                                 optHolidayDayAntiOrder[hi]=holidayDayAntiOrder[hi];
                             }
                         }
+                        //cout<<"chi2Tmp  : "<<chi2Tmp<<"   minChi2:"<<minChi2<<endl;
                     }
                 }
             }
@@ -618,23 +627,37 @@
             expectedPurTotal->SetBinContent(bi,expectedValue);
         }
     }
+    double chi2Tmp=0.;
+    for( int bi=lowScanBin; bi<=highScanBin; bi++ )
+    {
+        calValue[bi]=expectedPurTotal->GetBinContent(bi);
+        realValue[bi]=purTotal->GetBinContent(bi);
+        chi2Tmp+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+    }
+    chi2Tmp/=ndf;
+    cout<<"businessBoundary="<<businessBoundary <<" : "<<chi2Tmp<<endl;
+
     c->cd(1);
+    hUsrCategory->Draw();
+    c->cd(2);
     purTotal->GetXaxis()->SetTimeDisplay(1);
     purTotal->GetXaxis()->SetTimeFormat("%m/%d");
+    purTotal->SetAxisRange(lowFitUnix,timeHighEdge);
     purTotal->Draw("hist");
     expectedPurTotal->SetLineColor(kRed);
     expectedPurTotal->Draw("same");
     for( int ci=0 ; ci<cateNum ; ci++ )
     {
-        c->cd(ci+2);
+        c->cd(ci+3);
         purCate[ci]->GetXaxis()->SetTimeDisplay(1);
         purCate[ci]->GetXaxis()->SetTimeFormat("%m/%d");
+        purCate[ci]->SetAxisRange(lowFitUnix,timeHighEdge);
         purCate[ci]->Draw("hist");
         expectedPurCate[ci]->SetLineColor(kRed);
         expectedPurCate[ci]->Draw("same");
     }
     c->SaveAs(Form("jobs/%s.eps",anaStr[anaRedeem].c_str()));
-    
+
     //==>echo  *****forecast*****
     cout<<" "<<endl;
     cout<<" "<<endl;
