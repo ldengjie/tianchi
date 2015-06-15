@@ -5,10 +5,12 @@
     gStyle->SetLegendBorderSize(0);
 
 
-    bool anaRedeem=1;//otherwise purchase 
+    bool anaRedeem=0;//otherwise purchase 
+    int businessBoundary=3;
 
     string anaStr[2]={"Purchase","Redeem"};
     cout<<"=== begin to analize [ "<< anaStr[anaRedeem]<<" ] ==="<<endl;
+    cout<<"businessBoundary  : "<<businessBoundary<<endl;
 
     //Long64_t lowFitDate=20140312;
     Long64_t lowFitDate=20140312;
@@ -28,7 +30,7 @@
     const int maxMonthNum=30;
     const int maxPreAndAftNum=100;//maximum of pre,aft,length of  holiday(guoqing=7)
 
-    int minPreAft=0;
+    int minPreAft=7;
     int maxPreAft=7;
     //int preMonth=5;
     //int aftMonth=5;
@@ -140,7 +142,6 @@
         frePerDay[upti]=(double)totalNum[upti]/voliadDays;
     }
     const int cateNum=3;
-    int businessBoundary=4;
     Long64_t cateColor[cateNum]={2,3,4};
     Long64_t usrCategory[28367]={0};
     TH1D* hUsrCategory=new TH1D("hUsrCategory","hUsrCategory",cateNum,1,cateNum+1);
@@ -628,11 +629,13 @@
         }
     }
     double chi2Tmp=0.;
+    double realValuetotal[maxBinNum]={0.};
+    double calValuetotal[maxBinNum]={0.};
     for( int bi=lowScanBin; bi<=highScanBin; bi++ )
     {
-        calValue[bi]=expectedPurTotal->GetBinContent(bi);
-        realValue[bi]=purTotal->GetBinContent(bi);
-        chi2Tmp+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+        calValuetotal[bi]=expectedPurTotal->GetBinContent(bi);
+        realValuetotal[bi]=purTotal->GetBinContent(bi);
+        chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
     }
     chi2Tmp/=ndf;
     cout<<"businessBoundary="<<businessBoundary <<" : "<<chi2Tmp<<endl;
@@ -656,7 +659,7 @@
         expectedPurCate[ci]->SetLineColor(kRed);
         expectedPurCate[ci]->Draw("same");
     }
-    c->SaveAs(Form("jobs/%s.eps",anaStr[anaRedeem].c_str()));
+    //c->SaveAs(Form("jobs/%s.eps",anaStr[anaRedeem].c_str()));
 
     //==>echo  *****forecast*****
     cout<<" "<<endl;
