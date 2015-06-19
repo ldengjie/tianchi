@@ -4,7 +4,6 @@
     gStyle->SetOptStat(0);
     gStyle->SetLegendBorderSize(0);
 
-
     bool anaRedeem=0;//otherwise purchase 
     int businessBoundary=3;
 
@@ -12,10 +11,12 @@
     cout<<"=== begin to analize [ "<< anaStr[anaRedeem]<<" ] ==="<<endl;
     cout<<"businessBoundary  : "<<businessBoundary<<endl;
 
-    //Long64_t lowFitDate=20140312;
     Long64_t lowFitDate=20140312;
-    Long64_t highFitDate=20140831;
+    Long64_t highFitDate=20140731;
+    Long64_t lowForeDate=20140801;
+    Long64_t highForeDate=20140831;
     string fitFunc="expo";
+    cout<<"lowFitDate : "<<lowFitDate<<endl;
     //string fitFunc="expo(0)+pol1(2)";
     int paraNum=2;
     double x[1000]={0.};
@@ -29,9 +30,13 @@
     const int maxHolidayNum=30;
     const int maxMonthNum=30;
     const int maxPreAndAftNum=100;//maximum of pre,aft,length of  holiday(guoqing=7)
+    int lowStatDate=lowDate;
+    int highStatDate=highDate;
+    Long64_t lowScanDate=lowFitDate;
+    Long64_t highScanDate=highFitDate;
 
-    int minPreAft=7;
-    int maxPreAft=7;
+    int minPreAft=0;
+    int maxPreAft=5;
     //int preMonth=5;
     //int aftMonth=5;
     //int preHoliday=5;
@@ -108,21 +113,22 @@
     Long64_t balancePerDay[28367]={0};
     double frePerDay[28367]={0};
     Long64_t usrJoinTime[28367]={0};
-    //int lowStatDate=20140401;
-    //int highStatDate=20140831;
-    int lowStatDate=lowFitDate;
-    int highStatDate=highFitDate;
     Long64_t lowStatTime=coverTime2unix(lowStatDate);
     Long64_t highStatTime=coverTime2unix(highStatDate);
     Long64_t statDays=(highStatTime-lowStatTime)/86400;
     for( int ubti=0 ; ubti<ubtNum ; ubti++ )
     {
         user_balance_table->GetEntry(ubti); 
+        Long64_t amt=direct_purchase_amt;
+        if( anaRedeem )
+        {
+            amt=total_redeem_amt;
+        }
         if( report_date_unix>=lowStatTime&&report_date_unix<=highStatTime )
         {
-            totalBalance[user_id]+=direct_purchase_amt;
+            totalBalance[user_id]+=amt;
         }
-        if( direct_purchase_amt>0 && report_date_unix>=lowStatTime&&report_date_unix<=highStatTime )
+        if( amt>0 && report_date_unix>=lowStatTime&&report_date_unix<=highStatTime )
         {
             totalNum[user_id]+=1;
         }
@@ -147,6 +153,9 @@
     TH1D* hUsrCategory=new TH1D("hUsrCategory","hUsrCategory",cateNum,1,cateNum+1);
     for( int upti=0 ; upti<28367 ; upti++ )
     {
+            usrCategory[upti]=1;
+            hUsrCategory->Fill(1);
+        /*
         if( frePerDay[upti]*31<1 && balancePerDay[upti]*31<100000 )
         {
             usrCategory[upti]=1;
@@ -160,6 +169,7 @@
             usrCategory[upti]=2;
             hUsrCategory->Fill(2);
         }
+        */
     }
 
 
@@ -214,24 +224,24 @@
 
 
     //==> holiday information and days vetoed 
-    Long64_t holidayDate[34]={
-        20130813, 1,
-        20130910, 1,
+    Long64_t holidayDate[18]={
+        //20130813, 1,
+        //20130910, 1,
         20130919, 3,
         20131001, 7,
 
-        20140101, 1,
+        //20140101, 1,
         20140131, 7,
-        20140214, 1,
+        //20140214, 1,
         20140405, 3,
         20140501, 3,
-        20140511, 1,
+        //20140511, 1,
         20140531, 3,
-        20140615, 1,
+        //20140615, 1,
         20140618, 1,
-        20140802, 1,
+        //20140802, 1,
         20140906, 3,
-        20140910, 1,
+        //20140910, 1,
         20141001, 7
     };
     int col=sizeof(holidayDate)/sizeof(holidayDate[0])/2;
@@ -265,14 +275,16 @@
 
     //++++++++++++ scan each parameter ++++++++++++
 
-    Long64_t lowScanDate=lowFitDate;
-    Long64_t highScanDate=highFitDate;
     Long64_t tTmp=coverTime2unix(lowScanDate);
     int lowScanBin=purTotal->FindBin(tTmp);
     tTmp=coverTime2unix(highScanDate);
     int highScanBin=purTotal->FindBin(tTmp);
+    tTmp=coverTime2unix(lowForeDate);
+    int lowForeBin=purTotal->FindBin(tTmp);
+    tTmp=coverTime2unix(highForeDate);
+    int highForeBin=purTotal->FindBin(tTmp);
 
-    int ndf=highScanBin-lowScanBin+1;
+    int ndf=highScanBin-lowScanBin;
 
     Long64_t lowFitUnix=coverTime2unix(lowFitDate);
     Long64_t firstFitBin=purTotal->FindBin(lowFitUnix);
@@ -282,7 +294,8 @@
 
     //++++++++++++            ++++++++++++
     //
-    for( int ri=0 ; ri<cateNum ; ri++ )
+    //for( int ri=0 ; ri<cateNum ; ri++ )
+    for( int ri=0 ; ri<1; ri++ )
     {
         double weekDayRatio[7]={0.};
         double preHolidayRatio[maxPreAndAftNum]={0.};
@@ -628,6 +641,8 @@
             expectedPurTotal->SetBinContent(bi,expectedValue);
         }
     }
+    cout<<" "<<endl;
+    cout<<"  chi2/ndf in "<<lowScanDate<<" ~ "<<highScanDate<<endl;
     double chi2Tmp=0.;
     double realValuetotal[maxBinNum]={0.};
     double calValuetotal[maxBinNum]={0.};
@@ -638,7 +653,23 @@
         chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
     }
     chi2Tmp/=ndf;
-    cout<<"businessBoundary="<<businessBoundary <<" : "<<chi2Tmp<<endl;
+    cout<<"boundarychi2 "<<businessBoundary<<" "<<lowFitDate <<" : "<<chi2Tmp<<endl;
+
+    if( highForeDate<20140901 )
+    {
+        cout<<" "<<endl;
+        cout<<"  chi2/ndf in "<<lowForeDate<<" ~ "<<highForeDate<<endl;
+        chi2Tmp=0.;
+        int foreNdf=highForeBin-lowForeBin;
+        for( int bi=lowForeBin; bi<=highForeBin; bi++ )
+        {
+            calValuetotal[bi]=expectedPurTotal->GetBinContent(bi);
+            realValuetotal[bi]=purTotal->GetBinContent(bi);
+            chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
+        }
+        chi2Tmp/=ndf;
+        cout<<"forecastchi2 "<<businessBoundary<<" "<<lowFitDate <<" : "<<chi2Tmp<<endl;
+    }
 
     c->cd(1);
     hUsrCategory->Draw();
@@ -667,7 +698,7 @@
     cout<<" "<<endl;
     cout<<Form(" %s result for submitting : ",anaStr[anaRedeem].c_str())<<endl;
     cout<<" "<<endl;
-    for( int di=20140901 ; di<=20140930 ; di++ )
+    for( int di=lowForeDate; di<=highForeDate; di++ )
     {
         Long64_t timeTmp=coverTime2unix(di);
         cout<<di<<","<<setiosflags(ios::fixed)<<(int)expectedPurTotal->GetBinContent(expectedPurTotal->FindBin(timeTmp))<<endl;
