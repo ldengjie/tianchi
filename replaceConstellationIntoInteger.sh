@@ -28,7 +28,5 @@ sed \
     user_profile_table.csv > user_profile_table_new.csv
 mv user_profile_table_new.csv user_profile_table.csv
 
-sed \
-    -e "s#,$#,0#g" \
-    user_balance_table.csv> user_balance_table_tmp.csv
-mv user_balance_table_tmp.csv user_balance_table.csv
+#sed  -e 's#,,#,0,#g'  -e 's#,$#,0#g' user_balance_table.csv> user_balance_table_tmp.csv
+#mv user_balance_table_tmp.csv user_balance_table.csv

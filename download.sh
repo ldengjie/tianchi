@@ -1,9 +1,10 @@
-wget -O mfd_bank_shibor.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/mfd_bank_shibor.csv?Expires=1432288414&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=kJSSmi2lg1%2FD8nyVxxAu8jkGjtc%3D"
+wget -O mfd_bank_shibor.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/mfd_bank_shibor.csv?Expires=1434788581&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=R5OAfBXa9E3pTkIZx90j67%2BXeIU%3D"
 
-wget -O mfd_day_share_interest.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/mfd_day_share_interest.csv?Expires=1432288632&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=7ppbPATMeMsNf%2FEQodSjTase%2FfA%3D"
+wget -O mfd_day_share_interest.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/mfd_day_share_interest.csv?Expires=1434788585&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=Y81xyFuEIXxmsX14%2B10CnfnzngA%3D"
 
-wget -O user_balance_table.zip "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/user_balance_table.zip?Expires=1432288635&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=q6GBZ86uAP97nogbg15BOpUc3CY%3D"
+wget -O user_balance_table.zip "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/user_balance_table.zip?Expires=1434788589&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=chciH2CSEXk8PeI2eqI9mG%2BwlKA%3D"
 
-wget -O user_profile_table.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/user_profile_table.csv?Expires=1432288637&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=am%2Bs1rayIbHg20jxJndpUuI7Zdg%3D"
+wget -O user_profile_table.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/user_profile_table.csv?Expires=1434788592&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=aHWnv2%2BnsQAMx24YxYosJx4VZSo%3D"
 
-wget -O tc_comp_predict_table.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/%EF%BC%88example%EF%BC%89tc_comp_predict_table.csv?Expires=1432288639&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=zmsD7oKDK%2BFCKQ65c1FQ3MN3Jao%3D"
+wget -O tc_comp_predict_table.csv "http://aliyuntianchiresult.cn-hangzhou.oss.aliyun-inc.com/file/race/documents/3/£¨example£©tc_comp_predict_table.csv?Expires=1434788595&OSSAccessKeyId=2zep9f8tkzg6ennfl26ciifi&Signature=aYgIWl9oq2bIZM2%2Fmyp0DKqDOmM%3D"
+
