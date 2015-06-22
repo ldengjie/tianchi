@@ -6,15 +6,26 @@
 
     bool anaRedeem=0;//otherwise purchase 
     int businessBoundary=3;
+    int ver=2;//
+    int mothod=4;//old:1 new:2
+    const int cateNum=3;
+    int h618=1;//consider 6.18 or not
+    int h9=1;//forecast september or august
 
     string anaStr[2]={"Purchase","Redeem"};
     cout<<"=== begin to analize [ "<< anaStr[anaRedeem]<<" ] ==="<<endl;
     cout<<"businessBoundary  : "<<businessBoundary<<endl;
 
     Long64_t lowFitDate=20140312;
-    Long64_t highFitDate=20140831;
-    Long64_t lowForeDate=20140901;
-    Long64_t highForeDate=20140930;
+    Long64_t highFitDate=20140731;
+    Long64_t lowForeDate=20140801;
+    Long64_t highForeDate=20140831;
+    if( h9 )
+    {
+        highFitDate=20140831;
+        lowForeDate=20140901;
+        highForeDate=20140930;
+    }
     string fitFunc="expo";
     cout<<"lowFitDate : "<<lowFitDate<<endl;
     //string fitFunc="expo(0)+pol1(2)";
@@ -26,6 +37,8 @@
     Long64_t timeBinNum=490;//490 day,70 week,16 month
     Long64_t lowDate=20130602;
     Long64_t highDate=20141005;
+    //const int userNum=28367;//v1 28367,v2 28042
+    const int userNum=28367;//v1 28367,v2 28042
     const int maxBinNum=500;//should be more than "timeBinNum"
     const int maxHolidayNum=30;
     const int maxMonthNum=30;
@@ -63,7 +76,7 @@
     }sc;
     sc sco[500];
 
-    TFile* f=new TFile("tianChiOriginDataV2.root","read");
+    TFile* f=new TFile(Form("tianChiOriginDataV%i.root",ver),"read");
 
     TTree* user_balance_table=(TTree*)f->Get("user_balance_table");
     Long64_t ubtNum=user_balance_table->GetEntries();
@@ -108,11 +121,11 @@
 
 
     //user category
-    Long64_t totalBalance[28367]={0};
-    Long64_t totalNum[28367]={0};
-    Long64_t balancePerDay[28367]={0};
-    double frePerDay[28367]={0};
-    Long64_t usrJoinTime[28367]={0};
+    Long64_t totalBalance[userNum]={0};
+    Long64_t totalNum[userNum]={0};
+    Long64_t balancePerDay[userNum]={0};
+    double frePerDay[userNum]={0};
+    Long64_t usrJoinTime[userNum]={0};
     Long64_t lowStatTime=coverTime2unix(lowStatDate);
     Long64_t highStatTime=coverTime2unix(highStatDate);
     Long64_t statDays=(highStatTime-lowStatTime)/86400;
@@ -137,7 +150,7 @@
             usrJoinTime[user_id]=report_date_unix;
         }
     }
-    for( int upti=0 ; upti<28367 ; upti++ )
+    for( int upti=0 ; upti<userNum ; upti++ )
     {
         int voliadDays=statDays;
         if( usrJoinTime[upti]>lowStatTime&&usrJoinTime[upti]<highStatTime)
@@ -147,26 +160,31 @@
         balancePerDay[upti]=totalBalance[upti]/voliadDays;
         frePerDay[upti]=(double)totalNum[upti]/voliadDays;
     }
-    const int cateNum=3;
-    Long64_t cateColor[cateNum]={2,3,4};
-    Long64_t usrCategory[28367]={0};
+    Long64_t cateColor[3]={2,3,4};
+    Long64_t usrCategory[userNum]={0};
     TH1D* hUsrCategory=new TH1D("hUsrCategory","hUsrCategory",cateNum,1,cateNum+1);
-    for( int upti=0 ; upti<28367 ; upti++ )
+    for( int upti=0 ; upti<userNum ; upti++ )
     {
-        //usrCategory[upti]=1;
-        //hUsrCategory->Fill(1);
-        if( frePerDay[upti]*31<1 && balancePerDay[upti]*31<100000 )
+        if( cateNum==1 )
         {
             usrCategory[upti]=1;
             hUsrCategory->Fill(1);
-        } else if( frePerDay[upti]*31>=businessBoundary )
-        {
-            usrCategory[upti]=3;
-            hUsrCategory->Fill(3);
         }else
         {
-            usrCategory[upti]=2;
-            hUsrCategory->Fill(2);
+
+            if( frePerDay[upti]*31<1 && balancePerDay[upti]*31<100000 )
+            {
+                usrCategory[upti]=1;
+                hUsrCategory->Fill(1);
+            } else if( frePerDay[upti]*31>=businessBoundary )
+            {
+                usrCategory[upti]=3;
+                hUsrCategory->Fill(3);
+            }else
+            {
+                usrCategory[upti]=2;
+                hUsrCategory->Fill(2);
+            }
         }
     }
 
@@ -220,7 +238,6 @@
         monthDayAntiOrder[bi]=antiOrder;
     }
 
-
     //==> holiday information and days vetoed 
     Long64_t holidayDate[18]={
         //20130813, 1,
@@ -242,8 +259,13 @@
         //20140910, 1,
         20141001, 7
     };
+    if( !h618 )
+    {
+        holidayDate[12]=0;
+        holidayDate[13]=0;
+    }
     /*
-    Long64_t holidayDate[16]={
+    Long64_t holidayDate[34]={
         20130813, 1,
         20130910, 1,
         20130919, 3,
@@ -315,7 +337,7 @@
     //++++++++++++            ++++++++++++
     //
     for( int ri=0 ; ri<cateNum ; ri++ )
-        //for( int ri=0 ; ri<1; ri++ )
+    //for( int ri=0 ; ri<1; ri++ )
     {
         double weekDayRatio[7]={0.};
         double preHolidayRatio[maxPreAndAftNum]={0.};
@@ -536,11 +558,28 @@
                                     for( int bi=lowScanBin ; bi<=highScanBin ; bi++ )
                                     {
                                         calValue[bi]=(tfValue[bi])*(1+weekDayRatio[weekInfo[bi]]+(*monthDayOrderCorP[bi])+(*monthDayAntiOrderCorP[bi])+(*holidayDayAntiOrderCorP[bi])+(*holidayDayOrderCorP[bi]));
-                                        //chi2+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi])/realValue[bi];
-                                        chi2+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+                                        //chi2+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+                                        double ratio=abs(calValue[bi]-realValue[bi])/realValue[bi];
+                                        if( mothod==2 )
+                                        {
+                                            if( ratio<0.3 )
+                                            {
+                                                chi2+=10-ratio*100/3;
+                                            }
+                                        }else if( mothod==3 )
+                                        {
+                                           chi2+=ratio; 
+                                        }else if( mothod==4 )
+                                        {
+                                            chi2+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+                                        } else
+                                        {
+                                            chi2+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi])/realValue[bi];
+                                        }
+
                                     }
                                     chi2/=ndf;
-                                    if( sco[pi].minChi2ndf==999 ||chi2<=sco[pi].minChi2ndf)
+                                    if( sco[pi].minChi2ndf==999 ||( mothod==2&&chi2>sco[pi].minChi2ndf )||((mothod==1||mothod==4||mothod==3)&&chi2<sco[pi].minChi2ndf))
                                     {
                                         sco[pi].minChi2ndf=chi2;
                                         sco[pi].optVal=si;
@@ -555,11 +594,29 @@
                         for( int bi=lowScanBin; bi<=highScanBin; bi++ )
                         {
                             calValue[bi]=(tfValue[bi])*(1+weekDayRatio[weekInfo[bi]]+(*monthDayOrderCorP[bi])+(*monthDayAntiOrderCorP[bi])+(*holidayDayAntiOrderCorP[bi])+(*holidayDayOrderCorP[bi]));
-                            chi2Tmp+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+                            //chi2Tmp+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+                            double ratio=abs(calValue[bi]-realValue[bi])/realValue[bi];
+                            if( mothod==2 )
+                            {
+                                if( ratio<0.3 )
+                                {
+                                    chi2Tmp+=10-ratio*100/3;
+                                }
+                            }else if( mothod==3 )
+                            {
+                                chi2Tmp+=ratio; 
+                            }else if( mothod==4 )
+                            {
+                                chi2Tmp+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi]);
+                            } else
+                            {
+                                chi2Tmp+=(calValue[bi]-realValue[bi])*(calValue[bi]-realValue[bi])/realValue[bi];
+                            }
+
                         }
                         chi2Tmp/=ndf;
                         //cout<<"chi2Tmp  : "<<chi2Tmp<<"   minChi2:"<<minChi2<<endl;
-                        if( minChi2==999 ||chi2Tmp<minChi2)
+                        if( minChi2==999 ||(mothod==2&&chi2Tmp>minChi2)||((mothod==1||mothod==4||mothod==3)&&chi2Tmp<minChi2))
                         {
                             minChi2=chi2Tmp;
                             optPreAft[0]=pmi;
@@ -670,7 +727,24 @@
     {
         calValuetotal[bi]=expectedPurTotal->GetBinContent(bi);
         realValuetotal[bi]=purTotal->GetBinContent(bi);
-        chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
+        //chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
+        double ratio=abs(calValuetotal[bi]-realValuetotal[bi])/realValuetotal[bi];
+        if( mothod==2 )
+        {
+            if( ratio<0.3 )
+            {
+                chi2Tmp+=10-ratio*100/3;
+            }
+        } else if( mothod==3 )
+        {
+            chi2Tmp+=ratio;
+        }else if( mothod==4 )
+        {
+            chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
+        }else
+        {
+            chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi])/realValuetotal[bi];
+        }
     }
     chi2Tmp/=ndf;
     cout<<"boundarychi2 "<<businessBoundary<<" "<<lowFitDate <<" : "<<chi2Tmp<<endl;
@@ -685,9 +759,27 @@
         {
             calValuetotal[bi]=expectedPurTotal->GetBinContent(bi);
             realValuetotal[bi]=purTotal->GetBinContent(bi);
-            chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
+            //chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
+            double ratio=abs(calValuetotal[bi]-realValuetotal[bi])/realValuetotal[bi];
+            if( mothod==2 )
+            {
+                if( ratio<0.3 )
+                {
+                    chi2Tmp+=10-ratio*100/3;
+                }
+
+            } else if( mothod==3 )
+            {
+                chi2Tmp+=ratio;
+            }else if( mothod==4 )
+            {
+                chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi]);
+            }else
+            {
+                chi2Tmp+=(calValuetotal[bi]-realValuetotal[bi])*(calValuetotal[bi]-realValuetotal[bi])/realValuetotal[bi];
+            }
         }
-        chi2Tmp/=ndf;
+        chi2Tmp/=foreNdf;
         cout<<"forecastchi2 "<<businessBoundary<<" "<<lowFitDate <<" : "<<chi2Tmp<<endl;
     }
 
@@ -710,7 +802,7 @@
         expectedPurCate[ci]->SetLineColor(kRed);
         expectedPurCate[ci]->Draw("same");
     }
-    //c->SaveAs(Form("jobs/%s.eps",anaStr[anaRedeem].c_str()));
+    c->SaveAs("result.eps");
 
     //==>echo  *****forecast*****
     cout<<" "<<endl;
