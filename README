@@ -10,16 +10,3 @@
    %s#,,#,0,#g  //more than two times
    %s#,$#,0#g
 
-5. set branch format for tree
-5.1 user_balance_table.csv 
-user_id,report_date,tBalance,yBalance,total_purchase_amt,direct_purchase_amt,purchase_bal_amt,purchase_bank_amt,total_redeem_amt,consume_amt,transfer_amt,tftobal_amt,tftocard_amt,share_amt,category1,category2,category3,category4
-5.2 user_profile_table.csv
-user_id/L,sex/L,city/L,constellation/L
-5.3 mfd_bank_shibor.csv
-mfd_date/L,Interest_O_N/D,Interest_1_W/D,Interest_2_W/D,Interest_1_M/D,Interest_3_M/D,Interest_6_M/D,Interest_9_M/D,Interest_1_Y/D
-5.4 mfd_day_share_interest.csv
-mfd_date/L,mfd_daily_yield/D,mfd_7daily_yield/D
-
-6. root -l readIntoTree.C
-
-7. root -l mode.C
