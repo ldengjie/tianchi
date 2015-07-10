@@ -1,0 +1,9 @@
+library("forecast")
+library("TSA")
+library("xts")
+require("lmtest")
+data<-read.csv("redeem_by_type.csv")
+data<-data[276:428,]
+#report_date,total_redeem_amt,tftobal_amt,category1,category2,category3,category4,card0,card1,card2
+#report_date,data$total_redeem_amt,data$tftobal_amt,data$category1,data$category2,data$category3,data$category4,data$card0,data$card1,data$card2
+plot(as.zoo(cbind(data$total_redeem_amt,data$tftobal_amt,data$category1,data$category2,data$category3,data$category4,data$card1,data$card2)),col=1:8)
