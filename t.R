@@ -1,230 +1,249 @@
 library("forecast")
 library("TSA")
 library("xts")
-require("lmtest")
-data<-read.csv("48.csv");
-fs<-read.csv("456789fs.csv")
-startdate<-'2014-04-01';
-#fs<-read.csv("totalfs.csv")
-#data<-read.csv("total.csv");
-#startdate<-'2013-07-01'
-d<-data.frame(data$total_purchase_amt,data$total_redeem_amt);
-dstr<-c("Puchase /Day","Redeem /Day");
-aorder<-cbind(c(4,0,1),c(0,0,6));
-sorder<-cbind(c(3,1,1),c(0,1,2));
-#sorder<-cbind(c(3,0,2),c(0,0,2));
-#ij<-cbind(c(3,15),c(3,15));
-ij<-cbind(c(1,2),c(1,2));
-#fixc<-list(c(NA,0,NA,NA,0,0,NA,NA,NA,0),c(NA,NA,0,0,NA,0,NA,0));
-#fixc<-list(c(NA,0,NA,NA,0,0,0,NA,0,0,NA),c(NA,NA,0,0,NA,0,NA,0));
-di<-2;
-d17<-ts(d[di],fre=7)
-d130<-ts(d[di],fre=30)
-d1306<-ts(d[di],fre=30.44)
-d131<-ts(d[di],fre=31)
-d17l<-log(d17);
-d17lo<-log(d17);
-#d17l<-ts(c(rep(NA,7),diff(d17lo,lag=7)),fre=7);
-#d17l<-ts(diff(d17lo,lag=7),fre=7);
-#d17l<-ts(diff(diff(d17,lag=6),lag=7),fre=7);
-#d17l<-ts(diff(log(d17),lag=7),fre=7);
-le<-NROW(d17l);
-#d17lf<-ts(c(log(d17),rep(NA,30)),fre=7)
-d17lf<-ts(c(diff(log(d17),lag=7),rep(NA,30)),fre=7)
-#d130lf<-ts(c(log(d130),rep(NA,30)),fre=30)
-#d1306lf<-ts(c(log(d130),rep(NA,30)),fre=30.44)
-d1306lf<-ts(c(diff(log(d1306),lag=7),rep(NA,30)),fre=30.44)
-#d131lf<-ts(c(log(d131),rep(NA,30)),fre=31)
-##arima
-cat("################## seasonal arima \n")
-#d1l.fm.bestfit<- list(aic=Inf);
-aicb<-Inf;
-#for(i in 1:1){#1:3
-#for(i in ij[1,di]){
-    #for(j in 1:1){#1:15
-    #for(j in ij[2,di]){
-        #cat("i:",i," j:",j,"\n")
-        #xregfit<-data.frame(fourier(d17lf,K=i)[1:le,],fourier(d1306lf,K=j)[1:le,]);
-        #xregfit<-data.frame(fourier(d17lf,K=i)[1:le,],fourier(d1306lf,K=j)[1:le,],fs[1:le+7,]);
-        #xregfit<-data.frame(fourier(d17lf,K=i)[1:le,],fourier(d1306lf,K=j)[1:le,],fs[1:le,]);
-        xregfit<-data.frame(fs[1:le,]);
-        #xregfit<-data.frame(fourier(d17,K=3),fourier(d1306,K=15),fs[1:183,]);
-        #xregfit<-data.frame(fourier(d17lf,K=i)[1:le,],fourier(d130lf,K=j)[1:le,],fourier(d131lf,K=j)[1:le,],fs[1:le,]);
-        #d1l.f7t<-arimax(d17l,order=aorder[,di],xreg=xregfit,xtransf=data.frame(wy=1*(seq(d17l)==27)),transfer=list(c(1,0)));
-        #d1l.f7t<-arimax(d17l,order=aorder[,di],xreg=xregfit);
-        d1l.f7t<-arimax(d17l,order=aorder[,di],seasonal=list(order=sorder[,di],period=7),xreg=xregfit)
-        fixedv<-rep(NA,length(d1l.f7t$coef));
-        #needFix<-TRUE;
-        #while(needFix )
-        #while(needFix && !(di==1 && ((i==2 && j==10)||(i==3 && j==14))))
-        #while(needFix && !(di==1 && ((i==2 && j==1)||(i==3 && j==1)||(i==3 && j==9)||(i==3 && j==10))))
-        #while(0)
-        #{
+library("wmtsa")
+d<-read.csv("redeem_fs_49.csv")
+fitend<-153;
+preend<-183;
+prebeg<-fitend+1;
+data<-d[1:preend,]
+#par(mfcol=c(4,5))
+#plot(ts(data$total_redeem_amt))
+#plot(ts(data$tftobal_amt))
+#plot(ts(data$category1))
+#plot(ts(data$category2))
+#plot(ts(data$category3))
+#plot(ts(data$category4))
+#plot(ts(data$card1))
+#plot(ts(data$card2))
+#plot(ts(data$card3))
+#plot(ts(data$card4))
+#plot(ts(data$card5))
+#plot(ts(data$card6))
+#plot(ts(data$card7))
+#plot(ts(data$card8))
+#plot(ts(data$card9))
+#plot(ts(data$card10))
+#plot(ts(data$card11))
+
+report_date      <-data$report_date
+total_redeem_amt <-log(data$total_redeem_amt )
+tftobal_amt      <-log(data$tftobal_amt      )
+category1        <-log(data$category1        )
+category2        <-log(data$category2        )
+category3        <-log(data$category3        )
+category4        <-log(data$category4        )
+icard0            <-log(data$card0            )
+icard1            <-log(data$card1            )
+icard2            <-log(data$card2            )
+icard3             <-log(data$card3             )
+icard4             <-log(data$card4             )
+icard5             <-log(data$card5             )
+icard6             <-log(data$card6             )
+icard7             <-log(data$card7             )
+icard8             <-log(data$card8             )
+icard9             <-log(data$card9             )
+icard10            <-log(data$card10            )
+icard11            <-log(data$card11            )
+consume<-log(data$category1+data$category2+data$category3+data$category4)
+card1<-log(data$card1+data$card2+data$card3)
+card2<-log(data$card4+data$card5+data$card6)
+card3<-log(data$card7+data$card8+data$card9+data$card10+data$card11)
+
+zfb1<-log(exp(tftobal_amt)+exp(consume))
+card1<-log(exp(card1))
+card2<-log(exp(card2)+exp(card3))
+
+#total_redeem_amt<-wavShrink(total_redeem_amt[1:fitend],n.level=1)
+#zfb1<-wavShrink(zfb1[1:fitend],n.level=1)
+#card1      <-wavShrink(card1[1:fitend]      ,n.level=1)
+#card2      <-wavShrink(card2[1:fitend]      ,n.level=1)
+#for(i in 1:fitend)
+#{
+#total_redeem_amt[i]<-itotal_redeem_amt[i]
+#zfb1[i]<-izfb1[i]
+#card1[i]<-icard1[i]
+#card2[i]<-icard2[i]
+#}
+
+#par(mfcol=c(5,5))
+#plot(ts(total_redeem_amt))
+#acf(total_redeem_amt,lag=60)
+#pacf(total_redeem_amt,lag=60)
+#acf(diff(total_redeem_amt),lag=60) 
+#pacf(diff(total_redeem_amt),lag=60)
+#acf(diff(total_redeem_amt,lag=7),lag=60)
+#pacf(diff(total_redeem_amt,lag=7),lag=60)
+
+#plot(ts(zfb1))
+#acf(zfb1,lag=60)
+#pacf(zfb1,lag=60)
+#acf(diff(zfb1),lag=60) 
+#pacf(diff(zfb1),lag=60)
+#acf(diff(zfb1,lag=7),lag=60)
+#pacf(diff(zfb1,lag=7),lag=60)
+#
+#plot(ts(card1))
+#acf(card1,lag=60)
+#pacf(card1,lag=60)
+#acf(diff(card1),lag=60) 
+#pacf(diff(card1),lag=60)
+#acf(diff(card1,lag=7),lag=60)
+#pacf(diff(card1,lag=7),lag=60)
+#
+#plot(ts(card2))
+#acf(card2,lag=60)
+#pacf(card2,lag=60)
+#acf(diff(card2),lag=60) 
+#pacf(diff(card2),lag=60)
+#acf(diff(card2,lag=7),lag=60)
+#pacf(diff(card2,lag=7),lag=60)
+cat("... begin to loop ...")
+
+#xregpre<-rep(1,30);
+total_redeem_amt <-ts(total_redeem_amt ,fre=7)
+zfb1             <-ts(zfb1             ,fre=7)
+card1            <-ts(card1            ,fre=7)
+card2            <-ts(card2            ,fre=7)
+
+
+tslist<-list(total_redeem_amt,zfb1,card1,card2)
+#orderlist<-list(c(0,0,0),c(0,0,0),c(1,0,1))
+#sorderlist<-list(c(6,1,1),c(1,1,1),c(1,1,1))
+#orignal+features
+sorderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
+#orderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
+#orderlist<-list(c(0,0,0),c(1,0,1),c(2,0,5),c(1,0,5))
+orderlist<-list(c(0,0,0),c(2,0,8),c(3,0,12),c(1,0,13))
+#denoised
+#orderlist<-list(c(4,0,1),c(4,0,2),c(5,0,1),c(5,0,1))
+#sorderlist<-list(c(0,1,1),c(0,1,1),c(0,1,1),c(0,1,1))
+#orignal
+#orderlist<-list(c(0,0,0),c(2,0,4),c(5,0,1),c(5,0,2))
+#sorderlist<-list(c(0,0,0),c(1,1,0),c(0,1,1),c(0,1,1))
+xregfit<-data.frame(data[1:fitend,20:(NCOL(data)-1)]);
+xregpre<-data.frame(d[prebeg:preend,20:(NCOL(d)-1)]);
+#xregfit<-data.frame(data[,60]);
+#xregpre<-data.frame(d[prebeg:preend,60]);
+#xregfit<-data.frame(data[,27:NCOL(data)]);
+#xregpre<-data.frame(d[prebeg:preend,27:NCOL(d)]);
+#xregpre<-rep(1,30);
+result<-rep(0,30)
+fittedValue<-rep(0,fitend)
+#par(mfcol=c(6,4))
+#par(mfcol=c(2,2))
+par(mfcol=c(4,3))
+type<-list("total_redeem_amt","zfb1","card1","card2")
+for(ti in 2:4)
+{
+    #st<-seq(0,0.15,0.05);
+    st<-0.05
+    ts<-tslist[[ti]][1:fitend]
+    or<-orderlist[[ti]]
+    sor<-sorderlist[[ti]]
+    legend<-type[[ti]]
+    aicb<-Inf;
+    for(si in st)
+    {
+        if(si==0) next;
+        #tsam<-auto.arima(ts,xreg=xregfit)
+        tsam<-arima(ts,order=or,xreg=xregfit)
+        #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7),xreg=xregfit)
+        #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7))
+        aico<-tsam$aic;
+        fixedv<-rep(NA,length(tsam$coef));
+        needFix<-TRUE;
+        cat(si,"---------------------------->\n");
+        #print(tsam)
+        while(needFix)
+        {
             needFix<-FALSE;
-            cat(1);
-            for (ci in 1:length(d1l.f7t$coef))
+            hasNaN<-FALSE;
+            print(sqrt(diag(tsam$var.coef)))
+            for (ci in 1:length(tsam$coef))
             {
-                #if((d1l.f7t$coef[ci]!=0)&&(abs(confint(d1l.f7t)[ci,2]-confint(d1l.f7t)[ci,1])/4/0.978 - abs(d1l.f7t$coef[ci])) >= 0 )
-                if(coeftest(d1l.f7t)[ci,4]>0.05)
+                #if(is.na(coeftest(tsam)[ci,4])) 
+                if(is.na(sqrt(diag(tsam$var.coef))[ci])) 
                 {
-                    fixedv[ci]=0;
-                    needFix<-TRUE;
+                #cat("fnidddddddddddddddddddddd\n")
+                    hasNaN<-TRUE;
+                    break; 
                 }
-                #print(d1l.f7t)
             }
-            #d1l.f7t<-arimax(d17l,order=aorder[,di],xreg=xregfit,xtransf=data.frame(wy=1*(seq(d17l)==27)),transfer=list(c(1,0)),fixed=fixedv,transform.pars = FALSE)                                          
-            #d1l.f7t<-arimax(d17l,order=aorder[,di],xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
+            #if(!hasNaN)
+            if(1)
+            {
+                vi<-1;
+                for (ci in 1:length(tsam$coef))
+                {
+                    if(tsam$coef[ci]==0)
+                    {
+                        next
+                    }else
+                    {
+                        if(!is.na(sqrt(diag(tsam$var.coef))[vi]))
+                        {
+                            if( (1-pnorm(abs(tsam$coef[ci])/sqrt(diag(tsam$var.coef))[vi]))*2 > si )
+                            {
+                                fixedv[ci]=0;
+                                needFix<-TRUE;
+                            }
+                        }
+                        vi<-vi+1
+                    }
+
+                }
+            }
             if(needFix)
             {
-                d1l.f7t<-arimax(d17l,order=aorder[,di],seasonal=list(order=sorder[,di],period=7),xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
+                cat("Fixing...\n")
+                #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7),xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
+                tsam<-arima(ts,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
+                #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7),fixed=fixedv,transform.pars = FALSE)
+                #print(tsam)
             }
-        #}
-        #cat("i:",i," j:",j," aic:",d1l.f7t$aic,"\n")
-        #if(d1l.f7t$aic<aicb)
-        #{
-            #ki<-i;
-            #kj<-j;
-            #fixb<-fixedv;
-            #aicb<-d1l.f7t$aic;
-            #xregb<-xregfit;
-        #}
-    #}
-#}
-#cat("ki:",ki," kj:",kj," aic:",aicb,"\n");
-#d1l.fm.bestfit<-arimax(d17l,order=aorder[,di],xreg=xregb,xtransf=data.frame(wy=1*(seq(d17l)==27)),transfer=list(c(1,0)),fixed=fixb,transform.pars = FALSE)                                          
-#d1l.fm.bestfit<-arimax(d17l,order=aorder[,di],seasonal=list(order=sorder[,di],period=7),xreg=xregb,fixed=fixb,transform.pars = FALSE)                                          
-d1l.fm.bestfit<-d1l.f7t;
-#d1l.fm.bestfit<-arimax(d17l,order=aorder[,di],xreg=xregb)                                          
-print(d1l.fm.bestfit);
-#xregpre<-data.frame(fourier(d17lf,K=ki)[(le+1):(le+30),],fourier(d1306lf,K=kj)[(le+1):(le+30),]);
-#xregpre<-data.frame(fourier(d17lf,K=ki)[(le+1):(le+30),],fourier(d1306lf,K=kj)[(le+1):(le+30),],fs[(le+1):(le+30),]);
-#xregpre<-data.frame(fs[(le+1):(le+30),]);
-#xregpre<-data.frame(fourier(d17lf,K=ki)[(le+1):(le+30),],fourier(d130lf,K=kj)[(le+1):(le+30),],fourier(d131lf,K=kj)[(le+1):(le+30),],fs[(le+1):(le+30),]);
-#d1l.fm.p<-predict(d1l.fm.bestfit,newxreg =xregpre,xtransf=data.frame(wy=1*(seq(d17l)==27)),transfer=list(c(1,0)));
-#d1l.fm.p<-predict(d1l.fm.bestfit,newxreg =xregpre);
-#d1l.fmp<-d1l.fm.p$pred;
-#d1l.fmp<-exp(c(diffinv((d1l.fm.p$pred)[8:length(d1l.fm.p$pred)],lag=7,xi=d17lo[1:7])));
-#d1l.fmp<-exp(c(diffinv(d1l.fm.p$pred,lag=7,xi=d17lo[1:7])));
-##7.1 arima
-cat("################## arima \n")
-#d1l.m1<-arimax(d17l,order=aorder[,di],seasonal=list(order=sorder[,di],period=7),fixed=fixc[[di]],transform.pars = FALSE)
-d1l.m1<-arimax(d17l,order=aorder[,di],seasonal=list(order=sorder[,di],period=7))
-d1l.m1.d<-predict(d1l.m1,n.ahead=30)
-d1l.m1p<-d1l.m1.d$pred
-d1l.m1p
-m1fitted<-exp(fitted(d1l.m1));
-fb1=(                                     (exp(d1l.f7t$coef[22])-1)*m1fitted[26]+(exp(d1l.f7t$coef[35])-1)*m1fitted[56])/2;
-fb2=((exp(d1l.f7t$coef[10])-1)*m1fitted[1]+(exp(d1l.f7t$coef[23])-1)*m1fitted[27]+(exp(d1l.f7t$coef[36])-1)*m1fitted[57])/3;
-fb3=((exp(d1l.f7t$coef[11])-1)*m1fitted[2]+(exp(d1l.f7t$coef[24])-1)*m1fitted[28]+(exp(d1l.f7t$coef[37])-1)*m1fitted[58])/3;
-fb4=((exp(d1l.f7t$coef[12])-1)*m1fitted[3]+(exp(d1l.f7t$coef[25])-1)*m1fitted[29]+(exp(d1l.f7t$coef[38])-1)*m1fitted[59])/3;
-fb5=((exp(d1l.f7t$coef[13])-1)*m1fitted[4]+(exp(d1l.f7t$coef[26])-1)*m1fitted[30]+(exp(d1l.f7t$coef[39])-1)*m1fitted[60])/3;
-fi1=((exp(d1l.f7t$coef[14])-1)*m1fitted[5]+(exp(d1l.f7t$coef[27])-1)*m1fitted[31]+(exp(d1l.f7t$coef[40])-1)*m1fitted[61])/3;
-fi2=((exp(d1l.f7t$coef[15])-1)*m1fitted[6]+(exp(d1l.f7t$coef[28])-1)*m1fitted[32]+(exp(d1l.f7t$coef[41])-1)*m1fitted[62])/3;
-fi3=((exp(d1l.f7t$coef[16])-1)*m1fitted[7]+(exp(d1l.f7t$coef[29])-1)*m1fitted[33]+(exp(d1l.f7t$coef[42])-1)*m1fitted[63])/3;
-fa1=((exp(d1l.f7t$coef[17])-1)*m1fitted[8]+(exp(d1l.f7t$coef[30])-1)*m1fitted[34]+(exp(d1l.f7t$coef[43])-1)*m1fitted[64])/3;
-fa2=((exp(d1l.f7t$coef[18])-1)*m1fitted[9]+(exp(d1l.f7t$coef[31])-1)*m1fitted[35]+(exp(d1l.f7t$coef[44])-1)*m1fitted[65])/3;
-fa3=((exp(d1l.f7t$coef[19])-1)*m1fitted[10]+(exp(d1l.f7t$coef[32])-1)*m1fitted[36]+(exp(d1l.f7t$coef[45])-1)*m1fitted[66])/3;
-fa4=((exp(d1l.f7t$coef[20])-1)*m1fitted[11]+(exp(d1l.f7t$coef[33])-1)*m1fitted[37]+(exp(d1l.f7t$coef[46])-1)*m1fitted[67])/3;
-fa5=((exp(d1l.f7t$coef[21])-1)*m1fitted[12]+(exp(d1l.f7t$coef[34])-1)*m1fitted[38]+(exp(d1l.f7t$coef[47])-1)*m1fitted[68])/3;
-cat("fb1",fb1,"\n");
-cat("fb2",fb2,"\n");
-cat("fb3",fb3,"\n");
-cat("fb4",fb4,"\n");
-cat("fb5",fb5,"\n");
-cat("fi1",fi1,"\n");
-cat("fi2",fi2,"\n");
-cat("fi3",fi3,"\n");
-cat("fa1",fa1,"\n");
-cat("fa2",fa2,"\n");
-cat("fa3",fa3,"\n");
-cat("fa4",fa4,"\n");
-cat("fa5",fa5,"\n");
-d1l.m1pe<-exp(d1l.m1p)
-d1l.m1pee<-d1l.m1pe
-d1l.m1pee[1 ]<-d1l.m1pee[1 ]+fb1
-d1l.m1pee[2 ]<-d1l.m1pee[2 ]+fb2
-d1l.m1pee[3 ]<-d1l.m1pee[3 ]+fb3
-d1l.m1pee[4 ]<-d1l.m1pee[4 ]+fb4
-d1l.m1pee[5 ]<-d1l.m1pee[5 ]+fb5
-d1l.m1pee[6 ]<-d1l.m1pee[6 ]+fi1
-d1l.m1pee[7 ]<-d1l.m1pee[7 ]+fi2
-d1l.m1pee[8 ]<-d1l.m1pee[8 ]+fi3
-d1l.m1pee[9 ]<-d1l.m1pee[9 ]+fa1
-d1l.m1pee[10]<-d1l.m1pee[10]+fa2
-d1l.m1pee[11]<-d1l.m1pee[11]+fa3
-d1l.m1pee[12]<-d1l.m1pee[12]+fa4
-d1l.m1pee[13]<-d1l.m1pee[13]+fa5
-d1l.m1pee[26]<-d1l.m1pee[26]+fb1
-d1l.m1pee[27]<-d1l.m1pee[27]+fb2
-d1l.m1pee[28]<-d1l.m1pee[28]+fb3
-d1l.m1pee[29]<-d1l.m1pee[29]+fb4
-d1l.m1pee[30]<-d1l.m1pee[30]+fb5
-##lm
-cat("################## lm \n")
-dataw<-read.csv("48w.csv")
-dataw9<-read.csv("9w.csv")
-d1.lm1 = lm(total_purchase_amt ~ mon + tue + wed + thu + fri + sat + sun,dataw)
-d1.lm1p <-predict(d1.lm1,dataw9,interval ="prediction",level=0.95,se.fit=FALSE)
-d1.lm1p
-##ets
-cat("################## ets \n")
-d17ets<-ets(d17)
-d17etsp<-forecast(d17ets,30)                                          
-d17etsp
-##tbats30
-cat("################## tbats 7+30 \n")
-d17m<-msts(d17,seasonal.periods=c(7,30))
-d17tbats<-tbats(d17m)
-d17tbatsp<-forecast(d17tbats,30)
-d17tbatsp
-##tbats30.6
-cat("################## tbats 7+30.44 \n")
-d17m1<-msts(d17,seasonal.periods=c(7,30.44))
-d17tbats1<-tbats(d17m1)
-d17tbatsp1<-forecast(d17tbats1,30)
-d17tbatsp1
-##hw
-cat("################## hw \n")
-d17hw<-hw(d17,h=30,seasonal=("multiplicative"))
-d17hw
-##stlf
-#cat("################## stlf \n")
-#d17stlf<-stlf(d17,h=30)
-#d17stlf
-##plot
-d1l.m1.data<-ts(c(d17,rep(NA,30)),fre=7)               
-#d1l.m1.fore<-ts(exp(diffinv(c(fitted(d1l.m1),d1l.m1p),lag=7,xi=d17lo[1:7])),fre=7)
-d1l.m1.fore<-ts(exp(c(fitted(d1l.m1),d1l.m1p)),fre=7)
-d1l.m1ee.fore<-ts(c(exp(fitted(d1l.m1)),d1l.m1pee),fre=7)
-#d1l.m1.fore<-ts(c(fitted(d1l.m1),d1l.m1p),fre=7)
-#d1l.fm.fore<-ts(exp(c(fitted(d1l.fm.bestfit),d1l.fmp)),fre=7)    
-#d1l.fm.fore<-ts(c(exp(c(diffinv(fitted(d1l.fm.bestfit)[8:length(fitted(d1l.fm.bestfit))],lag=7,xi=d17lo[1:7]))),d1l.fmp),fre=7)    
-#d1l.fm.fore<-ts(exp(diffinv(c(fitted(d1l.fm.bestfit),d1l.fmp),lag=7,xi=d17lo[1:7])),fre=7)    
-#d1l.fm.fore<-ts(c(diffinv(c(fitted(d1l.fm.bestfit),d1l.fmp),lag=7,xi=d17lo[1:7])),fre=7)    
-d1.lm1.fore<-ts(c(fitted(d1.lm1),d1.lm1p[,1]),fre=7)    
-d1.ets.fore<-ts(c(fitted(d17ets),d17etsp$mean),fre=7)    
-d1.tba.fore<-ts(c(fitted(d17tbats),d17tbatsp$mean),fre=7)    
-d1.tb1.fore<-ts(c(fitted(d17tbats1),d17tbatsp1$mean),fre=7)    
-d1.hw1.fore<-ts(c(fitted(d17hw),d17hw$mean),fre=7)    
-d1l.m1.data.xts<-xts(d1l.m1.data,seq(as.POSIXct(startdate),len=length(d1l.m1.data),by='day'))
-d1l.m1.fore.xts<-xts(d1l.m1.fore,seq(as.POSIXct(startdate),len=length(d1l.m1.fore),by='day'))
-d1l.m1ee.fore.xts<-xts(d1l.m1ee.fore,seq(as.POSIXct(startdate),len=length(d1l.m1ee.fore),by='day'))
-#d1l.fm.fore.xts<-xts(d1l.fm.fore,seq(as.POSIXct(startdate),len=length(d1l.fm.fore),by='day'))
-d1.lm1.fore.xts<-xts(d1.lm1.fore,seq(as.POSIXct(startdate),len=length(d1.lm1.fore),by='day'))
-d1.ets.fore.xts<-xts(d1.ets.fore,seq(as.POSIXct(startdate),len=length(d1.ets.fore),by='day'))
-d1.tba.fore.xts<-xts(d1.tba.fore,seq(as.POSIXct(startdate),len=length(d1.tba.fore),by='day'))
-d1.tb1.fore.xts<-xts(d1.tb1.fore,seq(as.POSIXct(startdate),len=length(d1.tb1.fore),by='day'))
-d1.hw1.fore.xts<-xts(d1.hw1.fore,seq(as.POSIXct(startdate),len=length(d1.hw1.fore),by='day'))
-d1l.result<-(d1l.m1pee+d1.lm1p[,1]+d17tbatsp1$mean+d17hw$mean)/4;
-#d1l.result<-d1l.fmp;
-#d1l.result<-d1l.fmp;
-d1l.result.xts<-xts(d1l.result,seq(as.POSIXct(startdate),len=length(d1l.m1pee),by='day'))
-plot(as.zoo(cbind(d1l.m1.data.xts,d1l.m1.fore.xts,d1l.m1ee.fore.xts,d1.lm1.fore.xts,d1.ets.fore.xts,d1.tba.fore.xts,d1.tb1.fore.xts,d1.hw1.fore.xts,d1l.result.xts)),col=1:9,lty=1:9,screens=1,ylab=dstr[di],xlab="Time")
-legend(x="topright",legend=c("observed","seasonal arima","seasonal arima correction","lm","ets","tbats 7+30","tbats 7+30.44","hw","result"),lty=1:9,col=1:9)
-##print result
-cat(">>>> ",dstr[di]," <<<<\n")
-print(d1l.result.xts);
-cat("========\n")
-print(d1l.m1pee);
-#print(d1l.fm.bestfit);
-#cat("ki:",ki," kj:",kj," aic:",aicb,"\n");
+        }
+        ##print(tsam)
+        if(tsam$aic<aicb)
+        {
+            ki<-si;
+            fixb<-fixedv;
+            aicb<-tsam$aic;
+        }
+    }
+    #tsam.bestfit<-tsam;
+    #tsam.bestfit<-arima(ts,order=or,seasonal=list(order=sor,period=7),xreg=xregfit,fixed=fixb,transform.pars = FALSE);
+    tsam.bestfit<-arima(ts,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE);
+    #tsam.bestfit<-arima(ts,order=or,seasonal=list(order=sor,period=7),xreg=xregfit);
+    #tsam.bestfit<-arima(ts,order=or,seasonal=list(order=sor,period=7),fixed=fixb,transform.pars = FALSE);
+    #tsam.bestfit<-arima(ts,order=or,seasonal=list(order=sor,period=7));
+    cat("========>",legend,"<======\n")
+    cat("si=",ki,"aicb= ",aico,"->",aicb,"\n")
+    print(tsam.bestfit);
+    tsam.p<-predict(tsam.bestfit,newxreg =xregpre);
+    #tsam.p<-predict(tsam.bestfit,n.ahead=30);
+    tsamp<-tsam.p$pred;
+    #result<-cbind(result,tsamp)
+    #print(tsamp)
+    result<-result+exp(tsamp)
+    fittedValue<-fittedValue+exp(fitted(tsam.bestfit))
+    tsam.data<-ts(c(exp(ts),exp(tslist[[ti]][prebeg:preend])),fre=7)               
+    tsam.fore<-ts(exp(c(fitted(tsam.bestfit),tsamp)),fre=7)    
+    tsam.data.xts<-xts(tsam.data,seq(as.POSIXct("2014-04-01"),len=length(tsam.data),by='day'))
+    tsam.fore.xts<-xts(tsam.fore,seq(as.POSIXct("2014-04-01"),len=length(tsam.fore),by='day'))
+    plot(as.zoo(cbind(tsam.data.xts,tsam.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
+    legend(x="topright",legend=c("Observed",legend),lty=1:2,col=1:2)
+    acf(residuals(tsam.bestfit))
+    pacf(residuals(tsam.bestfit))
+    #acf(abs(residuals(tsam.bestfit)))
+    #pacf(abs(residuals(tsam.bestfit)))
+    #acf(residuals(tsam.bestfit)^2)
+    #pacf(residuals(tsam.bestfit)^2)
+}
+print(result)
+total.data<-ts(c(exp(total_redeem_amt[1:fitend]),exp(total_redeem_amt[prebeg:preend])),fre=7)               
+total.fore<-ts(c(fittedValue,result),fre=7)    
+total.data.xts<-xts(total.data,seq(as.POSIXct("2014-04-01"),len=length(total.data),by='day'))
+total.fore.xts<-xts(total.fore,seq(as.POSIXct("2014-04-01"),len=length(total.fore),by='day'))
+plot(as.zoo(cbind(total.data.xts,total.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
+legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)

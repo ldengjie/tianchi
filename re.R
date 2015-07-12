@@ -7,6 +7,8 @@ fitend<-153;
 preend<-183;
 prebeg<-fitend+1;
 data<-d[1:preend,]
+
+
 #par(mfcol=c(4,5))
 #plot(ts(data$total_redeem_amt))
 #plot(ts(data$tftobal_amt))
@@ -134,6 +136,7 @@ fittedValue<-rep(0,fitend)
 #par(mfcol=c(2,2))
 par(mfcol=c(4,3))
 type<-list("total_redeem_amt","zfb1","card1","card2")
+
 for(ti in 2:4)
 {
     #st<-seq(0,0.15,0.05);
