@@ -2,11 +2,14 @@ library("forecast")
 library("TSA")
 library("xts")
 library("wmtsa")
-d<-read.csv("redeem_fs_49.csv")
-fitend<-153;
-preend<-183;
+library("lmtest")
+od<-read.csv("redeem_by_type.csv")
+of<-read.csv("totalfs.csv")
+fitbeg<-275;#20140401
+fitend<-427;#20140831
 prebeg<-fitend+1;
-data<-d[1:preend,]
+preend<-457;#20140930
+fd<-od[fitbeg:fitend,]
 
 
 #par(mfcol=c(4,5))
@@ -137,22 +140,36 @@ fittedValue<-rep(0,fitend)
 par(mfcol=c(4,3))
 type<-list("total_redeem_amt","zfb1","card1","card2")
 
-for(ti in 2:4)
+xregfit<-of[fitbeg:fitend,2]
+xregpre<-of[prebeg:preend,2]
+for(xi in 3:NCOL(of))
+{
+    if(sum(of[fitbeg:fitend,xi])!=0)
+    {
+        xregfit<-cbind(xregfit,of[fitbeg:fitend,xi])
+        xregpre<-cbind(xregpre,of[prebeg:preend,xi])
+    }
+}
+for(ti in 2:5)
 {
     #st<-seq(0,0.15,0.05);
     st<-0.05
-    ts<-tslist[[ti]][1:fitend]
+    ts<-tslist[[ti]]
     or<-orderlist[[ti]]
     sor<-sorderlist[[ti]]
     legend<-type[[ti]]
     aicb<-Inf;
+    #vm<-list(model="iGARCH",garchOrder=c(8,8))
+    #mm<-list(armaOrder=c(1,1),include.mean=T,arfima=F,archpow = 1,external.regressors=xregfit[,60])
+    #spec<-ugarchspec(variance.mode=vm,mean.mode=mm,distribution.mode="norm")
+    #ts.igar=ugarchfit(fd=ts,spec=spec,out.sample=0,solver="solnp")
     for(si in st)
     {
         if(si==0) next;
         #tsam<-auto.arima(ts,xreg=xregfit)
-        tsam<-arima(ts,order=or,xreg=xregfit)
         #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7),xreg=xregfit)
         #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7))
+        tsam<-arima(ts,order=or,xreg=xregfit)
         aico<-tsam$aic;
         fixedv<-rep(NA,length(tsam$coef));
         needFix<-TRUE;
@@ -162,19 +179,17 @@ for(ti in 2:4)
         {
             needFix<-FALSE;
             hasNaN<-FALSE;
-            print(sqrt(diag(tsam$var.coef)))
             for (ci in 1:length(tsam$coef))
             {
                 #if(is.na(coeftest(tsam)[ci,4])) 
                 if(is.na(sqrt(diag(tsam$var.coef))[ci])) 
                 {
-                #cat("fnidddddddddddddddddddddd\n")
                     hasNaN<-TRUE;
                     break; 
                 }
             }
-            #if(!hasNaN)
-            if(1)
+            if(!hasNaN)
+                #if(0)
             {
                 vi<-1;
                 for (ci in 1:length(tsam$coef))
@@ -230,7 +245,7 @@ for(ti in 2:4)
     #print(tsamp)
     result<-result+exp(tsamp)
     fittedValue<-fittedValue+exp(fitted(tsam.bestfit))
-    tsam.data<-ts(c(exp(ts),exp(tslist[[ti]][prebeg:preend])),fre=7)               
+    tsam.data<-ts(c(exp(ts),od[prebeg:preend,2]),fre=7)               
     tsam.fore<-ts(exp(c(fitted(tsam.bestfit),tsamp)),fre=7)    
     tsam.data.xts<-xts(tsam.data,seq(as.POSIXct("2014-04-01"),len=length(tsam.data),by='day'))
     tsam.fore.xts<-xts(tsam.fore,seq(as.POSIXct("2014-04-01"),len=length(tsam.fore),by='day'))
@@ -242,11 +257,29 @@ for(ti in 2:4)
     #pacf(abs(residuals(tsam.bestfit)))
     #acf(residuals(tsam.bestfit)^2)
     #pacf(residuals(tsam.bestfit)^2)
+    #######
+    #tsst<-stlf(ts(ts[1:153],fre=7),h=30,s.window=7,method='arima',ic='bic',xreg=xregfit,newxreg=xregpre)
+    #result.st<-result.st+exp(tsst$mean)
+    #fittedValue.st<-fittedValue.st+exp(fitted(tsst))
+    #plot(tsst)
+    ########
+    tsm1<-msts(ts,seasonal.periods=c(7,30.44))
+    tstbats1<-tbats(tsm1)
+    tstbats71<-forecast(tstbats1,30)
+    #plot(tstbats1)
 }
 print(result)
-total.data<-ts(c(exp(total_redeem_amt[1:fitend]),exp(total_redeem_amt[prebeg:preend])),fre=7)               
+total.data<-ts(c(od[fitbeg:preend,2]),fre=7)               
 total.fore<-ts(c(fittedValue,result),fre=7)    
 total.data.xts<-xts(total.data,seq(as.POSIXct("2014-04-01"),len=length(total.data),by='day'))
 total.fore.xts<-xts(total.fore,seq(as.POSIXct("2014-04-01"),len=length(total.fore),by='day'))
 plot(as.zoo(cbind(total.data.xts,total.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
+legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)
+
+print(result.st)
+total.data.st<-ts(c(exp(total_purchase_amt[fitbeg:fitend]),exp(total_purchase_amt[prebeg:preend])),fre=7)               
+total.fore.st<-ts(c(fittedValue.st,result.st),fre=7)    
+total.data.st.xts<-xts(total.data.st,seq(as.POSIXct("2014-04-01"),len=length(total.data.st),by='day'))
+total.fore.st.xts<-xts(total.fore.st,seq(as.POSIXct("2014-04-01"),len=length(total.fore.st),by='day'))
+plot(as.zoo(cbind(total.data.st.xts,total.fore.st.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
 legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)
