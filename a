@@ -1,0 +1,184 @@
+5,7c5,7
+< d<-read.csv("redeem_fs_49.csv")
+< fitend<-153;
+< preend<-183;
+---
+> library("lmtest")
+> od<-read.csv("redeem_by_type.csv")
+> of<-read.csv("totalfs.csv")
+9c9
+< data<-d[1:preend,]
+---
+> fd<-od[fitbeg:fitend,]
+11,33c11,33
+< report_date      <-data$report_date
+< total_redeem_amt <-log(data$total_redeem_amt )
+< tftobal_amt      <-log(data$tftobal_amt      )
+< category1        <-log(data$category1        )
+< category2        <-log(data$category2        )
+< category3        <-log(data$category3        )
+< category4        <-log(data$category4        )
+< icard0            <-log(data$card0            )
+< icard1            <-log(data$card1            )
+< icard2            <-log(data$card2            )
+< icard3             <-log(data$card3             )
+< icard4             <-log(data$card4             )
+< icard5             <-log(data$card5             )
+< icard6             <-log(data$card6             )
+< icard7             <-log(data$card7             )
+< icard8             <-log(data$card8             )
+< icard9             <-log(data$card9             )
+< icard10            <-log(data$card10            )
+< icard11            <-log(data$card11            )
+< consume<-log(data$category1+data$category2+data$category3+data$category4)
+< card1<-log(data$card1+data$card2+data$card3)
+< card2<-log(data$card4+data$card5+data$card6)
+< card3<-log(data$card7+data$card8+data$card9+data$card10+data$card11)
+---
+>     report_date      <-fd$report_date
+>     total_redeem_amt <-log(fd$total_redeem_amt )
+>     tftobal_amt      <-log(fd$tftobal_amt      )
+>     category1        <-log(fd$category1        )
+>     category2        <-log(fd$category2        )
+>     category3        <-log(fd$category3        )
+>     category4        <-log(fd$category4        )
+>     icard0            <-log(fd$card0            )
+>     icard1            <-log(fd$card1            )
+>     icard2            <-log(fd$card2            )
+>     icard3             <-log(fd$card3             )
+>     icard4             <-log(fd$card4             )
+>     icard5             <-log(fd$card5             )
+>     icard6             <-log(fd$card6             )
+>     icard7             <-log(fd$card7             )
+>     icard8             <-log(fd$card8             )
+>     icard9             <-log(fd$card9             )
+>     icard10            <-log(fd$card10            )
+>     icard11            <-log(fd$card11            )
+>     consume<-log(fd$category1+fd$category2+fd$category3+fd$category4)
+>     card1<-log(fd$card1+fd$card2+fd$card3)
+>     card2<-log(fd$card4+fd$card5+fd$card6)
+> card3<-log(fd$card7+fd$card8+fd$card9+fd$card10+fd$card11)
+35,36c35,36
+< zfb1<-log(exp(tftobal_amt)+exp(consume))
+< card1<-log(exp(card1))
+---
+>     zfb1<-log(exp(tftobal_amt)+exp(consume))
+>     card1<-log(exp(card1))
+39,40d38
+< #{
+< #}
+41a40
+>     cat("... begin to loop ...")
+43,47c42,44
+< cat("... begin to loop ...")
+< 
+< total_redeem_amt <-ts(total_redeem_amt ,fre=7)
+< zfb1             <-ts(zfb1             ,fre=7)
+< card1            <-ts(card1            ,fre=7)
+---
+>     total_redeem_amt <-ts(total_redeem_amt ,fre=7)
+>     zfb1             <-ts(zfb1             ,fre=7)
+>     card1            <-ts(card1            ,fre=7)
+51,52c48,51
+< tslist<-list(total_redeem_amt,zfb1,card1,card2)
+< sorderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
+---
+> par(mfcol=c(3,2))
+>     type<-list("total_redeem_amt","zfb1","card1","card2")
+>     tslist<-list(total_redeem_amt,zfb1,card1,card2)
+>     sorderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
+54,59c53,60
+< xregfit<-data.frame(data[1:fitend,20:(NCOL(data)-1)]);
+< xregpre<-data.frame(d[prebeg:preend,20:(NCOL(d)-1)]);
+< result<-rep(0,30)
+< fittedValue<-rep(0,fitend)
+< par(mfcol=c(4,3))
+< type<-list("total_redeem_amt","zfb1","card1","card2")
+---
+> 
+>     result<-rep(0,30)
+>     fittedValue<-rep(0,fitend-fitbeg+1)
+>     result.st<-rep(0,30)
+> fittedValue.st<-rep(0,fitend-fitbeg+1)
+> 
+>     xregfit<-data.frame(of[fitbeg:fitend,2:(NCOL(of)-21)]);
+>     xregpre<-data.frame(of[prebeg:preend,2:(NCOL(of)-21)]);
+63,67c64,68
+<     ts<-tslist[[ti]][1:fitend]
+<     or<-orderlist[[ti]]
+<     sor<-sorderlist[[ti]]
+<     legend<-type[[ti]]
+<     aicb<-Inf;
+---
+>         ts<-tslist[[ti]]
+>         or<-orderlist[[ti]]
+>         sor<-sorderlist[[ti]]
+>         legend<-type[[ti]]
+>         aicb<-Inf;
+72c73
+<         aico<-tsam$aic;
+---
+>             aico<-tsam$aic;
+80d80
+<             print(sqrt(diag(tsam$var.coef)))
+89c89
+<             if(1)
+---
+>             if(!hasNaN)
+115c115
+<                 tsam<-arima(ts,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
+---
+>                     tsam<-arima(ts,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
+125d124
+<     tsam.bestfit<-arima(ts,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE);
+126a126,130
+>         tsam.bestfit<-arima(ts,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE);
+>     fittedValueTmp<-fitted(tsam.bestfit)
+>         print(tsam.bestfit);
+>     detectAO(tsam.bestfit);
+>     detectIO(tsam.bestfit);
+128,129c132
+<     print(tsam.bestfit);
+<     tsam.p<-predict(tsam.bestfit,newxreg =xregpre);
+---
+>         tsam.p<-predict(tsam.bestfit,newxreg =xregpre);
+131,140c134,144
+<     result<-result+exp(tsamp)
+<     fittedValue<-fittedValue+exp(fitted(tsam.bestfit))
+<     tsam.data<-ts(c(exp(ts),exp(tslist[[ti]][prebeg:preend])),fre=7)               
+<     tsam.fore<-ts(exp(c(fitted(tsam.bestfit),tsamp)),fre=7)    
+<     tsam.data.xts<-xts(tsam.data,seq(as.POSIXct("2014-04-01"),len=length(tsam.data),by='day'))
+<     tsam.fore.xts<-xts(tsam.fore,seq(as.POSIXct("2014-04-01"),len=length(tsam.fore),by='day'))
+<     plot(as.zoo(cbind(tsam.data.xts,tsam.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
+<     legend(x="topright",legend=c("Observed",legend),lty=1:2,col=1:2)
+<     acf(residuals(tsam.bestfit))
+<     pacf(residuals(tsam.bestfit))
+---
+>     print(exp(tsamp))
+>         result<-result+exp(tsamp)
+>         fittedValue<-fittedValue+exp(fittedValueTmp)
+>         tsam.data<-ts(c(exp(ts),od[prebeg:preend,2]),fre=7)               
+>         tsam.fore<-ts(exp(c(fittedValueTmp,tsamp)),fre=7)    
+>         tsam.data.xts<-xts(tsam.data,seq(as.POSIXct("2014-04-01"),len=length(tsam.data),by='day'))
+>         tsam.fore.xts<-xts(tsam.fore,seq(as.POSIXct("2014-04-01"),len=length(tsam.fore),by='day'))
+>         plot(as.zoo(cbind(tsam.data.xts,tsam.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
+>         legend(x="topright",legend=c("Observed",legend),lty=1:2,col=1:2)
+> #######
+> ########
+142,143c146,147
+< print(result)
+< total.data<-ts(c(exp(total_redeem_amt[1:fitend]),exp(total_redeem_amt[prebeg:preend])),fre=7)               
+---
+>     print(result)
+>     total.data<-ts(c(od[fitbeg:preend,2]),fre=7)               
+145,148c149,153
+< total.data.xts<-xts(total.data,seq(as.POSIXct("2014-04-01"),len=length(total.data),by='day'))
+< total.fore.xts<-xts(total.fore,seq(as.POSIXct("2014-04-01"),len=length(total.fore),by='day'))
+< plot(as.zoo(cbind(total.data.xts,total.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
+< legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)
+---
+>     total.data.xts<-xts(total.data,seq(as.POSIXct("2014-04-01"),len=length(total.data),by='day'))
+>     total.fore.xts<-xts(total.fore,seq(as.POSIXct("2014-04-01"),len=length(total.fore),by='day'))
+>     plot(as.zoo(cbind(total.data.xts,total.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
+>     legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)
+> 

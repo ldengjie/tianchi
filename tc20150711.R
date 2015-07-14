@@ -1,5 +1,5 @@
 #######################
-193
+193.445
 合并分类后+features~（000）得到pq~arima
 #######################
 library("forecast")
@@ -290,6 +290,7 @@ total.data.xts<-xts(total.data,seq(as.POSIXct("2014-04-01"),len=length(total.dat
 total.fore.xts<-xts(total.fore,seq(as.POSIXct("2014-04-01"),len=length(total.fore),by='day'))
 plot(as.zoo(cbind(total.data.xts,total.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
 legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)
+
 #######################
 report_date = c(  
   as.integer(20140901)
