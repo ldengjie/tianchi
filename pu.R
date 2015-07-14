@@ -71,8 +71,12 @@ sorderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
 
 result<-rep(0,30)
 fittedValue<-rep(0,fitend-fitbeg+1)
-result.stlf<-rep(0,30)
+result.stlf.arima<-rep(0,30)
+result.stlf.ets<-rep(0,30)
+result.tbats<-rep(0,30)
+result.sam<-rep(0,30)
 fittedValue.stlf<-rep(0,fitend-fitbeg+1)
+result.tsw<-rep(0,30)
 #xregfit<-data.frame(of[fitbeg:fitend,2:(NCOL(of)-21)]);
 #xregpre<-data.frame(of[prebeg:preend,2:(NCOL(of)-21)]);
 
@@ -128,6 +132,7 @@ for(ti in 2:5)
     for(si in st)
     {
         if(si==0) next;
+        #lm+arima nosize
         #tsam<-auto.arima(ts,xreg=xregfit)
         #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7),xreg=xregfit)
         #tsam<-arima(ts,order=or,seasonal=list(order=sor,period=7))
@@ -345,15 +350,53 @@ for(ti in 2:5)
     #acf(residuals(tsam.bestfit)^2)
     #pacf(residuals(tsam.bestfit)^2)
     #######
-    #tsst<-stlf(ts(ts[1:153],fre=7),h=30,s.window=7,method='arima',ic='bic',xreg=xregfit,newxreg=xregpre)
-    #result.stlf<-result.stlf+exp(tsst$mean)
-    #fittedValue.stlf<-fittedValue.stlf+exp(fitted(tsst))
-    #plot(tsst)
-    ########
-    #tsm1<-msts(ts,seasonal.periods=c(7,30.44))
-    #tstbats1<-tbats(tsm1)
-    #tstbats71<-forecast(tstbats1,30)
+    #TODO:
+    #obtain month/holiday features from arima.
+    coefs <- tsam.bestfit$coef
+    narma<-sum(tsam.bestfit$arma[1:4])
+    if(names(coefs)[narma + 1L] == "intercept") narma<-narma+1
+    shift<-coefs[-(1:narma)]
+    holidayshift<-rep(1,30)
+    for(fi in 7:NCOL(shift))
+    {
+        holidayshift<-holidayshift*exp(xregfit[,fi]*shift[fi])
+    }
+    monthshift<-rep(1,30)
+    for(fi in 17:NCOL(shift))
+    {
+        monthshift<-monthshift*exp(xregfit[,fi]*shift[fi])
+    }
+    ###stlf.arima###
+    tsst.arima<-stlf(ts,h=30,s.window=7,method='arima',ic='bic',xreg=xregfit,newxreg=xregpre)
+    result.stlf.arima<-result.stlf.arima+exp(tsst.arima$mean)
+    fittedValue.stlf<-fittedValue.stlf+exp(fitted(tsst.arima))
+    ###stlf.ets###
+    tsst.ets<-stlf(ts,h=30,s.window=7,method='ets',ic='bic',opt.crit='mae')
+    result.stlf.ets<-result.stlf.ets+exp(tsst.ets$mean)*holidayshift*monthshift
+    ###tbats###
+    tsm1<-msts(ts,seasonal.periods=c(7,30.44))
+    tbats<-tbats(tsm1)
+    tbatsp<-forecast(tbats,30)
+    result.tbats<-result.tbats+exp(tbatsp)*holidayshift
     #plot(tstbats1)
+    #TODO:
+    #use wavelet ,arima for each wave.
+    tsw3<-wavMODWT(ts,n.level=3)
+    tswp<-rep(0,30)
+    for(tswi in 1:4)
+    {
+        tsw<-auto.arima(tsw3$data[tswi],xreg=xregfit)
+    TODO: fix
+        tsw.p<-predict(tsw,newxreg=xregpre)
+        tswp<-tswp+tws.p$pred
+    }
+    result.tsw<-result.tsw+exp(tswp)
+    #seasonal arima + holiday shift 
+    tssam<-arima(ts,order=c(0,0,0),seasonal=list(order=c(0,1,0)r,period=7))
+    tssam.p<-predict(tssam,30)
+    tssamp<-tssam.p$pred
+    result.sam<-result.sam+exp(tssam)*holidayshift*monthshift
+    TODO: fix
 }
 print(result)
 total.data<-ts(c(od[fitbeg:preend,2]),fre=7)               
@@ -363,10 +406,35 @@ total.fore.xts<-xts(total.fore,seq(as.POSIXct("2014-04-01"),len=length(total.for
 plot(as.zoo(cbind(total.data.xts,total.fore.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
 legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)
 
-#print(result.stlf)
+#print(result.stlf.arima)
 #total.data.stlf<-ts(c(exp(total_purchase_amt[fitbeg:fitend]),exp(total_purchase_amt[prebeg:preend])),fre=7)               
-#total.fore.stlf<-ts(c(fittedValue.stlf,result.stlf),fre=7)    
+#total.fore.stlf<-ts(c(fittedValue.stlf,result.stlf.arima),fre=7)    
 #total.data.stlf.xts<-xts(total.data.stlf,seq(as.POSIXct("2014-04-01"),len=length(total.data.stlf),by='day'))
 #total.fore.stlf.xts<-xts(total.fore.stlf,seq(as.POSIXct("2014-04-01"),len=length(total.fore.stlf),by='day'))
 #plot(as.zoo(cbind(total.data.stlf.xts,total.fore.stlf.xts)),col=1:2,lty=1:2,screens=1,xlab="Time")
 #legend(x="topright",legend=c("Observed","total"),lty=1:2,col=1:2)
+fixPar<-function(am)
+{
+    fix<-am$call$fixed
+    fixedv<-if(!is.null(fix)) eval.parent(fix) else rep(NA,length(am$coef));
+    needFix<-FALSE;
+    vi<-1;
+    for (ci in 1:length(am$coef))
+    {
+        if(am$coef[ci]==0)
+        {
+            next
+        }else
+        {
+            if(!is.na(sqrt(diag(am$var.coef))[vi]))
+            {
+                if( (1-pnorm(abs(am$coef[ci])/sqrt(diag(am$var.coef))[vi]))*2 > si )
+                {
+                    fixedv[ci]=0;
+                    needFix<-TRUE;
+                }
+            }
+            vi<-vi+1
+        }
+    } 
+}
