@@ -106,7 +106,7 @@ xregpre<-data.frame(of[prebeg:preend,2:17],of[prebeg:preend,20:32],of[prebeg:pre
 #xregpre<-cbind(xregpre,of[prebeg:preend,xi])
 #}
 #}
-for(ti in 2:2)
+for(ti in 2:4)
 {
     #st<-seq(0,0.4,0.05);
     st<-0.05
@@ -115,13 +115,13 @@ for(ti in 2:2)
     sor<-sorderlist[[ti]]
     legend<-type[[ti]]
     aicb<-Inf;
-    vm<-list(model="iGARCH",garchOrder=c(4,1),submodel = NULL, external.regressors = NULL, variance.targeting = FALSE)
+    #vm<-list(model="iGARCH",garchOrder=c(4,1),submodel = NULL, external.regressors = NULL, variance.targeting = FALSE)
     #mm<-list(armaOrder=c(5,1),include.mean=FALSE,external.regressors=as.matrix(xregfit))
-    mm<-list(armaOrder=c(5,1),external.regressors=as.matrix(xregfit[,1]))
-    #mm<-list(armaOrder=c(5,1))
-    spec<-ugarchspec(variance.mode=vm,mean.mode=mm,distribution.mode="norm",start.pars = list(), fixed.pars = list())
-    ts.igar=ugarchfit(data=tsdata,spec=spec,solver.control=list(trace=0))
-    next
+    #mm<-list(armaOrder=c(5,1),external.regressors=as.matrix(xregfit[,1]))
+    #mm<-list(armaOrder=c(1,1))
+    #spec<-ugarchspec(variance.mode=vm,mean.mode=mm,distribution.mode="norm",start.pars = list(), fixed.pars = list())
+    #ts.igar=ugarchfit(data=tsdata,spec=spec,solver.control=list(trace=0))
+    #next
     for(si in st)
     {
         if(si==0) next;
@@ -180,16 +180,16 @@ for(ti in 2:2)
     print(exp(tsamp))
     result.tsam<-result.tsam+exp(tsamp)
     fittedValue.tsam<-fittedValue.tsam+exp(fittedValueTmp)
-        acf(residuals(tsam.bestfit),lag=60)
-        pacf(residuals(tsam.bestfit),lag=60)
+        #acf(residuals(tsam.bestfit),lag=60)
+        #pacf(residuals(tsam.bestfit),lag=60)
         #acf(abs(residuals(tsam.bestfit)),lag=60)
         #pacf(abs(residuals(tsam.bestfit)),lag=60)
         #acf(residuals(tsam.bestfit)^2,lag=60)
         #pacf(residuals(tsam.bestfit)^2,lag=60)
-        acf(diff(residuals(tsam.bestfit)),lag=60) 
-        pacf(diff(residuals(tsam.bestfit)),lag=60)
-        acf(diff(residuals(tsam.bestfit),lag=7),lag=60)
-        pacf(diff(residuals(tsam.bestfit),lag=7),lag=60)
+        #acf(diff(residuals(tsam.bestfit)),lag=60) 
+        #pacf(diff(residuals(tsam.bestfit)),lag=60)
+        #acf(diff(residuals(tsam.bestfit),lag=7),lag=60)
+        #pacf(diff(residuals(tsam.bestfit),lag=7),lag=60)
 
 #    #obtain month/holiday features from arima.
 #    coefs <- tsam.bestfit$coef
@@ -343,7 +343,7 @@ for(ti in 2:2)
 #                   +ts(fittedValue.sam       ,fre=7)
 #                   +ts(fittedValue.hw        ,fre=7)
 #                   )/7
-#totalResult<-( ts(result.tsam,fre=7)
+totalResult<-( ts(result.tsam,fre=7)
 #              +ts(result.stlf.arima,fre=7)
 #              +ts(result.stlf.ets  ,fre=7)
 #              #+ts(result.tbats     ,fre=7)
@@ -351,10 +351,10 @@ for(ti in 2:2)
 #              +ts(result.fourier   ,fre=7)
 #              +ts(result.sam       ,fre=7)
 #              +ts(result.hw        ,fre=7)
-#              )/7
+              )/1
 #
 #cat(">>>> Redeem <<<<\n")
-#print(totalResult)
+print(totalResult)
 #
 #total.data           <-ts(c(od[fitbeg:preend,2]),fre=7)               
 #total.fore           <-ts(c(totalFittedValue,totalResult),fre=7)    

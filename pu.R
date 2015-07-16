@@ -174,12 +174,12 @@ for(ti in 2:5)
         fittedValueTmp<-fitted(tsam.bestfit)
         print(tsam.bestfit);
     }
-        acf(residuals(tsam.bestfit),lag=60)
-        pacf(residuals(tsam.bestfit),lag=60)
-        acf(abs(residuals(tsam.bestfit)),lag=60)
-        pacf(abs(residuals(tsam.bestfit)),lag=60)
-        acf(residuals(tsam.bestfit)^2,lag=60)
-        pacf(residuals(tsam.bestfit)^2,lag=60)
+        #acf(residuals(tsam.bestfit),lag=60)
+        #pacf(residuals(tsam.bestfit),lag=60)
+        #acf(abs(residuals(tsam.bestfit)),lag=60)
+        #pacf(abs(residuals(tsam.bestfit)),lag=60)
+        #acf(residuals(tsam.bestfit)^2,lag=60)
+        #pacf(residuals(tsam.bestfit)^2,lag=60)
         #acf(diff(residuals(tsam.bestfit)),lag=60) 
         #pacf(diff(residuals(tsam.bestfit)),lag=60)
         #acf(diff(residuals(tsam.bestfit),lag=7),lag=60)
@@ -359,8 +359,8 @@ for(ti in 2:5)
 #                   +ts(fittedValue.fourier   ,fre=7)
 #                   +ts(fittedValue.sam       ,fre=7)
 #                   +ts(fittedValue.hw        ,fre=7)
-#                   )/7
-#totalResult<-( ts(result.tsam,fre=7)
+                   #)/1
+totalResult<-( ts(result.tsam,fre=7)
 #              +ts(result.stlf.arima,fre=7)
 #              +ts(result.stlf.ets  ,fre=7)
 #              #+ts(result.tbats     ,fre=7)
@@ -368,10 +368,10 @@ for(ti in 2:5)
 #              +ts(result.fourier   ,fre=7)
 #              +ts(result.sam       ,fre=7)
 #              +ts(result.hw        ,fre=7)
-#              )/7
+              )/1
 #
 #cat(">>>> Purchase <<<<\n")
-#print(totalResult)
+print(totalResult)
 #
 #total.data           <-ts(c(od[fitbeg:preend,2]),fre=7)               
 #total.fore           <-ts(c(totalFittedValue,totalResult),fre=7)    
