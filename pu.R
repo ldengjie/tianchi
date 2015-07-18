@@ -2,7 +2,7 @@ library("forecast")
 library("TSA")
 library("xts")
 library("wmtsa")
-od<-read.csv("purchase_by_type.csv")
+od<-read.csv("purchase_by_type_p1_v1.csv")
 of<-read.csv("totalfs.csv")
 #fitbeg<-1;#20140401
 fitbeg<-275;#20140401

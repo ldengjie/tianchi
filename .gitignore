@@ -4,6 +4,7 @@ user*.csv
 *.Rh*
 *.RD*
 *.zip
+.DS_Store
 !tc_comp_predict_table.csv
 # Compiled Object files
 *.slo

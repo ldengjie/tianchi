@@ -3,7 +3,7 @@ library("TSA")
 library("xts")
 library("wmtsa")
 library("rugarch")
-od<-read.csv("redeem_by_type.csv")
+od<-read.csv("redeem_by_type_p1_v1.csv")
 of<-read.csv("totalfs.csv")
 fitbeg<-275;#20140401
 fitend<-427;#20140831
