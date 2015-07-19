@@ -10,6 +10,7 @@
    %s#,,#,0,#g  //more than two times
    %s#,$#,0#g
 
+v1 zfb:0-3 bank:0-11 from season 2 part1
 v2 zfb:0-31 bank:0-41
 v3 zfb:0-3 bank:0-3
 v4 zfb:(0-3)*7 bank:(0-3)*7

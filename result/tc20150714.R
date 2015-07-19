@@ -366,66 +366,66 @@ report_date = c(
 )
 
 purchase= c(  
-  as.integer(1333260561)
-, as.integer(1046648871)
-, as.integer(1016650217)
-, as.integer(937759768 )
-, as.integer(900124332 )
-, as.integer(500416478 )
-, as.integer(546486659 )
-, as.integer(795909492 )
-, as.integer(1046648871)
-, as.integer(1016650217)
-, as.integer(1011053652)
-, as.integer(816678163 )
-, as.integer(571509319 )
-, as.integer(620168922 )
-, as.integer(1015550797)
-, as.integer(1046648871)
-, as.integer(1016650217)
-, as.integer(937759768 )
-, as.integer(816678163 )
-, as.integer(571509319 )
-, as.integer(620168922 )
-, as.integer(1015550797)
-, as.integer(1046648871)
-, as.integer(1016650217)
-, as.integer(937759768 )
-, as.integer(816678163 )
-, as.integer(571509319 )
-, as.integer(813148230 )
-, as.integer(1015550797)
-, as.integer(1098260351)
+  as.integer(1333260561)1309221384
+, as.integer(1046648871)1148420103
+, as.integer(1016650217)1175604089
+, as.integer(937759768 )991324737 
+, as.integer(900124332 )913866697 
+, as.integer(500416478 )461650332 
+, as.integer(546486659 )479070723 
+, as.integer(795909492 )751350498 
+, as.integer(1046648871)1052005723
+, as.integer(1016650217)1010119070
+, as.integer(1011053652)989454075 
+, as.integer(816678163 )913363591 
+, as.integer(571509319 )610800412 
+, as.integer(620168922 )602374296 
+, as.integer(1015550797)989833775 
+, as.integer(1046648871)1001573947
+, as.integer(1016650217)962250825 
+, as.integer(937759768 )869762521 
+, as.integer(816678163 )790496934 
+, as.integer(571509319 )572480721 
+, as.integer(620168922 )576565886 
+, as.integer(1015550797)946501239 
+, as.integer(1046648871)956313623 
+, as.integer(1016650217)919066761 
+, as.integer(937759768 )832468250 
+, as.integer(816678163 )757936483 
+, as.integer(571509319 )550649886 
+, as.integer(813148230 )805499495 
+, as.integer(1015550797)907409817 
+, as.integer(1098260351)963315206 
 )
 redeem= c(  
-  as.integer(1156544184)
-, as.integer(1091257845)
-, as.integer(1003655196)
-, as.integer(979681582 )
-, as.integer(926459683 )
-, as.integer(462698320 )
-, as.integer(489422265 )
-, as.integer(846343419 )
-, as.integer(1091257845)
-, as.integer(1003655196)
-, as.integer(979681582 )
-, as.integer(882550873 )
-, as.integer(645382706 )
-, as.integer(703338919 )
-, as.integer(1156544184)
-, as.integer(1091257845)
-, as.integer(1003655196)
-, as.integer(979681582 )
-, as.integer(882550873 )
-, as.integer(645382706 )
-, as.integer(703338919 )
-, as.integer(1156544184)
-, as.integer(1091257845)
-, as.integer(1003655196)
-, as.integer(979681582 )
-, as.integer(882550873 )
-, as.integer(645382706 )
-, as.integer(703338919 )
-, as.integer(1156544184)
-, as.integer(1225839492)
+  as.integer(1156544184)1143657493
+, as.integer(1091257845)1008237041
+, as.integer(1003655196)1362628556
+, as.integer(979681582 )962780500 
+, as.integer(926459683 )849040602 
+, as.integer(462698320 )383494392 
+, as.integer(489422265 )504868703 
+, as.integer(846343419 )811229901 
+, as.integer(1091257845)1083753162
+, as.integer(1003655196)1084950013
+, as.integer(979681582 )976344293 
+, as.integer(882550873 )829051542 
+, as.integer(645382706 )626582488 
+, as.integer(703338919 )680421572 
+, as.integer(1156544184)1181873386
+, as.integer(1091257845)1105940763
+, as.integer(1003655196)1107223992
+, as.integer(979681582 )999481213 
+, as.integer(882550873 )855370351 
+, as.integer(645382706 )643964052 
+, as.integer(703338919 )698054709 
+, as.integer(1156544184)1206698011
+, as.integer(1091257845)1130476288
+, as.integer(1003655196)1131855037
+, as.integer(979681582 )1025066516
+, as.integer(882550873 )887968273 
+, as.integer(645382706 )723425713 
+, as.integer(703338919 )1234704502
+, as.integer(1156544184)1241508656
+, as.integer(1225839492)1183644853
 )
