@@ -1,8 +1,7 @@
 library("forecast")
 library("TSA")
 library("xts")
-library("wmtsa")
-library("rugarch")
+#library("rugarch")
 #od1<-read.csv("redeem_by_type_sum_p1_v4.csv")
 od<-read.csv("redeem_by_type_sum_p2_v4.csv")
 #od<-od1+od2
@@ -127,16 +126,16 @@ cat("... begin to loop ...\n")
 #card2            <-ts(card2            ,fre=7)
 
 
-#par(mfcol=c(2,2))
-par(mfcol=c(4,2))
+##par(mfcol=c(2,2))
+#par(mfcol=c(4,2))
 type<-list("total_redeem_amt","zfb1","zfb2","consume","card1","card2","card3")
 tslist<-list(total_redeem_amt,zfb1,zfb2,consume,card1,card2,card3)
 #orignal+features
 sorderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
-orderlist<-list(c(0,0,0),c(4,0,1),c(4,1,1),c(2,0,3),c(6,0,5),c(2,1,1),c(4,0,4))
+#orderlist<-list(c(0,0,0),c(4,0,1),c(4,1,1),c(2,0,3),c(6,0,5),c(2,1,1),c(4,0,4))
 #with time
-#orderlist<-list(c(0,0,0),c(1,0,5),c(3,1,1),c(1,0,4),c(4,1,4),c(1,0,5),c(3,1,1))
-#orderlist<-list(c(0,0,0),c(1,0,5),c(3,1,1),c(2,1,1),c(1,0,2),c(1,0,5),c(3,1,1))
+orderlist<-list(c(0,0,0),c(1,0,5),c(3,1,1),c(1,0,4),c(4,1,4),c(1,0,5),c(3,1,1))
+orderlist<-list(c(0,0,0),c(1,0,5),c(3,1,1),c(2,1,1),c(1,0,2),c(1,0,5),c(3,1,1))
 #no time
 #orderlist<-list(c(0,0,0),c(4,1,1),c(4,1,1),c(7,1,1),c(2,1,1),c(2,1,1),c(2,1,1))
 #no time p1 p2
@@ -159,8 +158,10 @@ fittedValue.fourier    <-rep(0,fitend-fitbeg+1)
 fittedValue.sam        <-rep(0,fitend-fitbeg+1)
 fittedValue.hw         <-rep(0,fitend-fitbeg+1)
 #5
-xregfit<-data.frame(of[fitbeg:fitend,2:7],of[fitbeg:fitend,8:43],of[fitbeg:fitend,46:58],of[fitbeg:fitend,61],of[fitbeg:fitend,64:74],of[fitbeg:fitend,98]);
-xregpre<-data.frame(of[prebeg:preend,2:7],of[prebeg:preend,8:43],of[prebeg:preend,46:58],of[prebeg:preend,61],of[prebeg:preend,64:74],of[prebeg:preend,98]);
+#xregfit<-data.frame(of[fitbeg:fitend,2:7],of[fitbeg:fitend,8:43],of[fitbeg:fitend,46:58],of[fitbeg:fitend,61],of[fitbeg:fitend,64:74],of[fitbeg:fitend,98]);
+#xregpre<-data.frame(of[prebeg:preend,2:7],of[prebeg:preend,8:43],of[prebeg:preend,46:58],of[prebeg:preend,61],of[prebeg:preend,64:74],of[prebeg:preend,98]);
+xregfit<-data.frame(of[fitbeg:fitend,2:7],of[fitbeg:fitend,13:22],of[fitbeg:fitend,46:58],of[fitbeg:fitend,61],of[fitbeg:fitend,64:74],scale(of[fitbeg:fitend,98]));
+xregpre<-data.frame(of[prebeg:preend,2:7],of[prebeg:preend,13:22],of[prebeg:preend,46:58],of[prebeg:preend,61],of[prebeg:preend,64:74],scale(of[prebeg:preend,98]));
 #xregfit<-data.frame(of[fitbeg:fitend,2:17],of[fitbeg:fitend,20:32],of[fitbeg:fitend,35],of[fitbeg:fitend,38:48],scale(of[fitbeg:fitend,72]));
 #xregpre<-data.frame(of[prebeg:preend,2:17],of[prebeg:preend,20:32],of[prebeg:preend,35],of[prebeg:preend,38:48],scale(of[prebeg:preend,72]));
 #xregfit<-data.frame(of[fitbeg:fitend,2:17],of[fitbeg:fitend,20:32],of[fitbeg:fitend,35],of[fitbeg:fitend,38:48]);
@@ -195,14 +196,14 @@ for(ti in 2:7)
     for(si in st)
     {
         if(si==0) next;
-        if(ti==4)
-        {
+        #if(ti==4)
+        #{
             #tsam<-arima(tsdata,order=or,xreg=xregfit,io=c(52))
-            tsam<-arima(tsdata,order=or,xreg=data.frame(xregfit,1*(seq(tsdata)==52)))
-        }else
-        {
+            #tsam<-arima(tsdata,order=or,xreg=data.frame(xregfit,1*(seq(tsdata)==52)))
+        #}else
+        #{
             tsam<-arima(tsdata,order=or,xreg=xregfit)
-        }
+        #}
         aico<-tsam$aic;
         fixedv<-rep(NA,length(tsam$coef));
         needFix<-TRUE;
@@ -234,14 +235,14 @@ for(ti in 2:7)
             if(needFix)
             {
                 cat("Fixing...\n")
-                if(ti==4)
-                {
-                    #tsam<-arima(tsdata,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE,io=c(52))
-                    tsam<-arima(tsdata,order=or,xreg=data.frame(xregfit,1*(seq(tsdata)==52)),fixed=fixedv,transform.pars = FALSE)
-                }else
-                {
+                #if(ti==4)
+                #{
+                    ##tsam<-arima(tsdata,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE,io=c(52))
+                    #tsam<-arima(tsdata,order=or,xreg=data.frame(xregfit,1*(seq(tsdata)==52)),fixed=fixedv,transform.pars = FALSE)
+                #}else
+                #{
                     tsam<-arima(tsdata,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
-                }
+                #}
             }
         }
         ##print(tsam)
@@ -253,29 +254,29 @@ for(ti in 2:7)
         }
     }
     cat("========>",legend,"<======\n")
-    if(ti==4)
-    {
-        #tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE,io=c(52));
-        tsam.bestfit<-arima(tsdata,order=or,xreg=data.frame(xregfit,1*(seq(tsdata)==52)),fixed=fixb,transform.pars = FALSE);
-        fittedValueTmp<-fitted(tsam.bestfit)
-        print(tsam.bestfit);
-        #tsam.bestfit$coef<-tsam.bestfit$coef[1:(length(tsam.bestfit$coef)-1)]
-    }else
-    {
+    #if(ti==4)
+    #{
+        ##tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE,io=c(52));
+        #tsam.bestfit<-arima(tsdata,order=or,xreg=data.frame(xregfit,1*(seq(tsdata)==52)),fixed=fixb,transform.pars = FALSE);
+        #fittedValueTmp<-fitted(tsam.bestfit)
+        #print(tsam.bestfit);
+        ##tsam.bestfit$coef<-tsam.bestfit$coef[1:(length(tsam.bestfit$coef)-1)]
+    #}else
+    #{
         tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE);
         fittedValueTmp<-fitted(tsam.bestfit)
         print(tsam.bestfit);
-    }
+    #}
     detectAO(tsam.bestfit);
     detectIO(tsam.bestfit);
     cat("si=",ki,"aicb= ",aico,"->",aicb,"\n")
-    if(ti==4)
-    {
-        tsam.p<-predict(tsam.bestfit,newxreg =data.frame(xregpre,rep(0,30)));
-    }else
-    {
+    #if(ti==4)
+    #{
+        #tsam.p<-predict(tsam.bestfit,newxreg =data.frame(xregpre,rep(0,30)));
+    #}else
+    #{
         tsam.p<-predict(tsam.bestfit,newxreg =xregpre);
-    }
+    #}
     tsamp<-tsam.p$pred;
     print(exp(tsamp))
     result.tsam<-result.tsam+exp(tsamp)
@@ -298,14 +299,16 @@ for(ti in 2:7)
     shift<-coefs[-(1:narma)]
     cat("###holidayshift###\n")
     holidayshift<-rep(1,30)
-    for(fi in 43:56)
+    #for(fi in 43:56)
+    for(fi in 17:30)
     {
         holidayshift<-holidayshift*exp(xregpre[,fi]*shift[fi])
     }
     print(holidayshift)
     cat("###monthshift###\n")
     monthshift<-rep(1,30)
-    for(fi in 7:42)
+    #for(fi in 7:42)
+    for(fi in 7:16)
     {
         monthshift<-monthshift*exp(xregpre[,fi]*shift[fi])
     }
@@ -319,44 +322,45 @@ for(ti in 2:7)
     tsst.arima<-stlf(tsdata,h=30,s.window=7,method='arima',ic='bic',xreg=xregfit,newxreg=xregpre)
     result.stlf.arima<-result.stlf.arima+exp(tsst.arima$mean)
     fittedValue.stlf.arima<-fittedValue.stlf.arima+exp(fitted(tsst.arima))
-    cat("###tbats###\n")
-    tsm1<-msts(tsdata,seasonal.periods=c(7,30.44))
-    tbats<-tbats(tsm1)
-    tbatsp<-forecast(tbats,30)
-    result.tbats<-result.tbats+exp(tbatsp$mean)*holidayshift
-    fittedValue.tbats<-fittedValue.tbats+exp(fitted(tbats))
-    cat("###fourier###\n")
-    ff<-od[fitbeg:preend,2]
-    d7<-ts(ff,fre=7)
-    d30<-ts(ff,fre=30.44)
-    #tsfo<-arimax(tsdata,order=c(5,0,5),xreg=data.frame(fourier(d7,K=3)[1:(fitend-fitbeg+1)],fourier(d30,K=15)[1:(fitend-fitbeg+1)]));
-    tsfo<-auto.arima(tsdata,xreg=data.frame(fourier(d7,K=3)[1:(fitend-fitbeg+1)],fourier(d30,K=15)[1:(fitend-fitbeg+1)]),allowdrift=F);
-    tsfo.p<-predict(tsfo,newxreg = data.frame(fourier(d7,K=3)[(prebeg-fitbeg+1):(preend-fitbeg+1)],fourier(d30,K=15)[(prebeg-fitbeg+1):(preend-fitbeg+1)]));
-    tsfop<-exp(tsfo.p$pred)*holidayshift;
-    result.fourier<-result.fourier+tsfop;
-    fittedValue.fourier<-fittedValue.fourier+exp(tsdata-residuals(tsfo));
-    cat("###wavelet###\n")
-    nl<-3
-    tsw3<-wavMODWT(tsdata,n.level=nl)
-    tswp<-rep(0,30)
-    to<-rep(0,153)
-    tsw31<-wavMRD(tsw3)
-    tfi<-rep(0,153)
-    wor<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,1,0))
-    for(tswi in 1:(nl+1))
-    {
-        tsw<-arima(tsw31[[tswi]],order=wor[[tswi]],xreg=xregfit)
-        to<-to+tsw31[[tswi]]
-        tfi<-tfi+tsw31[[tswi]]-residuals(tsw)
-        tsw.p<-predict(tsw,newxreg=xregpre)
-        tswp<-tswp+tsw.p$pred
-        #tsw.datat.xts<-xts(c(tsw31[[tswi]],rep(NA,30)),seq(as.POSIXct(beginDate),len=183,by='day'))
-        #tsw.foret<-ts(c((tsw31[[tswi]]-residuals(tsw)),tsw.p$pred),fre=7)    
-        #tsw.foret.xts<-xts(tsw.foret,seq(as.POSIXct(beginDate),len=length(tsw.foret),by='day'))
-        #plot(as.zoo(cbind(tsw.datat.xts,tsw.foret.xts)),col=1:3,lty=1:3,screens=1)
-    }
-    result.tsw<-result.tsw+exp(tswp)*holidayshift
-    fittedValue.tsw<-fittedValue.tsw+exp(tfi)
+    #cat("###tbats###\n")
+    #tsm1<-msts(tsdata,seasonal.periods=c(7,30.44,91.31),ts.frequency=7)
+    #tbats<-tbats(tsm1)
+    #tbatsp<-forecast(tbats,30)
+    #result.tbats<-result.tbats+exp(tbatsp$mean)*holidayshift
+    #fittedValue.tbats<-fittedValue.tbats+exp(fitted(tbats))
+    #cat("###fourier###\n")
+    #ff<-od[fitbeg:preend,2]
+    #d7<-ts(ff,fre=7)
+    #d30<-ts(ff,fre=30.44)
+    #d90<-ts(ff,fre=91.31)
+    ##tsfo<-arimax(tsdata,order=c(5,0,5),xreg=data.frame(fourier(d7,K=3)[1:(fitend-fitbeg+1)],fourier(d30,K=15)[1:(fitend-fitbeg+1)]));
+    #tsfo<-auto.arima(tsdata,xreg=data.frame(fourier(d7,K=3)[1:(fitend-fitbeg+1)],fourier(d30,K=2)[1:(fitend-fitbeg+1)],fourier(d90,K=2)[1:(fitend-fitbeg+1)]));
+    #tsfo.p<-predict(tsfo,newxreg = data.frame(fourier(d7,K=3)[(prebeg-fitbeg+1):(preend-fitbeg+1)],fourier(d30,K=2)[(prebeg-fitbeg+1):(preend-fitbeg+1)],fourier(d90,K=2)[(prebeg-fitbeg+1):(preend-fitbeg+1)]));
+    #tsfop<-exp(tsfo.p$pred)*holidayshift;
+    #result.fourier<-result.fourier+tsfop;
+    #fittedValue.fourier<-fittedValue.fourier+exp(tsdata-residuals(tsfo));
+    #cat("###wavelet###\n")
+    #nl<-3
+    #tsw3<-wavMODWT(tsdata,n.level=nl)
+    #tswp<-rep(0,30)
+    #to<-rep(0,153)
+    #tsw31<-wavMRD(tsw3)
+    #tfi<-rep(0,153)
+    #wor<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,1,0))
+    #for(tswi in 1:(nl+1))
+    #{
+        #tsw<-arima(tsw31[[tswi]],order=wor[[tswi]],xreg=xregfit)
+        #to<-to+tsw31[[tswi]]
+        #tfi<-tfi+tsw31[[tswi]]-residuals(tsw)
+        #tsw.p<-predict(tsw,newxreg=xregpre)
+        #tswp<-tswp+tsw.p$pred
+        ##tsw.datat.xts<-xts(c(tsw31[[tswi]],rep(NA,30)),seq(as.POSIXct(beginDate),len=183,by='day'))
+        ##tsw.foret<-ts(c((tsw31[[tswi]]-residuals(tsw)),tsw.p$pred),fre=7)    
+        ##tsw.foret.xts<-xts(tsw.foret,seq(as.POSIXct(beginDate),len=length(tsw.foret),by='day'))
+        ##plot(as.zoo(cbind(tsw.datat.xts,tsw.foret.xts)),col=1:3,lty=1:3,screens=1)
+    #}
+    #result.tsw<-result.tsw+exp(tswp)*holidayshift
+    #fittedValue.tsw<-fittedValue.tsw+exp(tfi)
 
 #    cat("#seasonal arima + holiday shift \n")
 #    nor<-list(c(0,0,0),c(2,0,4),c(5,0,1),c(5,0,2))
@@ -416,46 +420,46 @@ for(ti in 2:7)
    tsam.fore      <-ts(exp(c(fittedValueTmp,tsamp)),fre=7)    
     stlf.arima.fore<-ts(c(exp(fitted(tsst.arima)),exp(tsst.arima$mean)),fre=7)    
     stlf.ets.fore  <-ts(c(exp(fitted(tsst.ets)),exp(tsst.ets$mean)*holidayshift*monthshift),fre=7)    
-    tbats.fore     <-ts(c(exp(fitted(tbats)),exp(tbatsp$mean)*holidayshift),fre=7)    
-    tsfo.fore      <-ts(c(exp(tsdata-residuals(tsfo)),tsfop),fre=7)    
-    tsw.fore       <-ts(c(exp(tfi),exp(tswp)*holidayshift),fre=7)    
+    #tbats.fore     <-ts(c(exp(fitted(tbats)),exp(tbatsp$mean)*holidayshift),fre=7)    
+    #tsfo.fore      <-ts(c(exp(tsdata-residuals(tsfo)),tsfop),fre=7)    
+    #tsw.fore       <-ts(c(exp(tfi),exp(tswp)*holidayshift),fre=7)    
     #tssam.fore     <-ts(c(exp(fitted(tssam)),exp(tssamp)*holidayshift*monthshift),fre=7)    
     tshw.fore      <-ts(c(fitted(tshw),tshw$mean*holidayshift*monthshift),fre=7)    
    tsam.fore.xts      <-xts(tsam.fore,seq(as.POSIXct(beginDate),len=length(tsam.fore),by='day'))
     stlf.arima.fore.xts<-xts(stlf.arima.fore,seq(as.POSIXct(beginDate),len=length(stlf.arima.fore),by='day'))
     stlf.ets.fore.xts  <-xts(stlf.ets.fore,seq(as.POSIXct(beginDate),len=length(stlf.ets.fore),by='day'))
-    tbats.fore.xts     <-xts(tbats.fore,seq(as.POSIXct(beginDate),len=length(tbats.fore),by='day'))
-    tsfo.fore.xts      <-xts(tsfo.fore,seq(as.POSIXct(beginDate),len=length(tsfo.fore),by='day'))
-    tsw.fore.xts       <-xts(tsw.fore,seq(as.POSIXct(beginDate),len=length(tsw.fore),by='day'))
+    #tbats.fore.xts     <-xts(tbats.fore,seq(as.POSIXct(beginDate),len=length(tbats.fore),by='day'))
+    #tsfo.fore.xts      <-xts(tsfo.fore,seq(as.POSIXct(beginDate),len=length(tsfo.fore),by='day'))
+    #tsw.fore.xts       <-xts(tsw.fore,seq(as.POSIXct(beginDate),len=length(tsw.fore),by='day'))
     #tssam.fore.xts     <-xts(tssam.fore,seq(as.POSIXct(beginDate),len=length(tssam.fore),by='day'))
     tshw.fore.xts      <-xts(tshw.fore,seq(as.POSIXct(beginDate),len=length(tshw.fore),by='day'))
     #plot(as.zoo(cbind(tsam.data.xts,tsam.fore.xts,stlf.arima.fore.xts,stlf.ets.fore.xts,tbats.fore.xts,tsfo.fore.xts,tsw.fore.xts,tssam.fore.xts,tshw.fore.xts)),col=1:9,lty=1:9,screens=1)
     #legend(x="topleft",legend=c("observed","arima+lm","stlf.arima","stlf.ets","tbats","fourier arima","wavelet arima","seasonal arima","hw"),lty=1:9,col=1:9)
-    plot(as.zoo(cbind(tsam.data.xts,tsam.fore.xts,stlf.arima.fore.xts,stlf.ets.fore.xts,tbats.fore.xts,tsfo.fore.xts,tsw.fore.xts,tshw.fore.xts)),col=1:9,lty=1:9,screens=1)
-    legend(x="topleft",legend=c("observed","arima+lm","stlf.arima","stlf.ets","tbats","fourier arima","wavelet arima","hw"),lty=1:9,col=1:9)
+    #plot(as.zoo(cbind(tsam.data.xts,tsam.fore.xts,stlf.arima.fore.xts,stlf.ets.fore.xts,tbats.fore.xts,tshw.fore.xts)),col=1:9,lty=1:9,screens=1)
+    #legend(x="topleft",legend=c("observed","arima+lm","stlf.arima","stlf.ets","tbats","hw"),lty=1:9,col=1:9)
    #plot(as.zoo(cbind(tsam.data.xts,tsam.fore.xts)),col=1:9,lty=1:9,screens=1)
    #legend(x="topleft",legend=c("observed","arima+lm"),lty=1:9,col=1:9)
 
 }
 #
 totalFittedValue<-( ts(fittedValue.tsam,fre=7)
-#                   +ts(fittedValue.stlf.arima,fre=7)
-#                   +ts(fittedValue.stlf.ets  ,fre=7)
-#                   #+ts(fittedValue.tbats     ,fre=7)
+                   +ts(fittedValue.stlf.arima,fre=7)
+                   +ts(fittedValue.stlf.ets  ,fre=7)
+                   #+ts(fittedValue.tbats     ,fre=7)
 #                   +ts(fittedValue.tsw       ,fre=7)
 #                   +ts(fittedValue.fourier   ,fre=7)
 #                   +ts(fittedValue.sam       ,fre=7)
-#                   +ts(fittedValue.hw        ,fre=7)
-                   )/1
+                   +ts(fittedValue.hw        ,fre=7)
+                   )/4
 totalResult<-( ts(result.tsam,fre=7)
-#              +ts(result.stlf.arima,fre=7)
-#              +ts(result.stlf.ets  ,fre=7)
-#              #+ts(result.tbats     ,fre=7)
+              +ts(result.stlf.arima,fre=7)
+              +ts(result.stlf.ets  ,fre=7)
+              #+ts(result.tbats     ,fre=7)
 #              +ts(result.tsw       ,fre=7)
 #              +ts(result.fourier   ,fre=7)
 #              +ts(result.sam       ,fre=7)
-#              +ts(result.hw        ,fre=7)
-              )/1
+              +ts(result.hw        ,fre=7)
+              )/4
 #
 #cat(">>>> Redeem <<<<\n")
 print(totalResult)
@@ -465,9 +469,9 @@ total.fore           <-ts(c(totalFittedValue,totalResult),fre=7)
 total.fore.tsam      <-ts(c(fittedValue.tsam      ,result.tsam      ),fre=7)    
 total.fore.stlf.arima<-ts(c(fittedValue.stlf.arima,result.stlf.arima),fre=7)    
 total.fore.stlf.ets  <-ts(c(fittedValue.stlf.ets  ,result.stlf.ets  ),fre=7)    
-total.fore.tbats     <-ts(c(fittedValue.tbats     ,result.tbats     ),fre=7)    
-total.fore.tsw       <-ts(c(fittedValue.tsw       ,result.tsw       ),fre=7)    
-total.fore.fourier   <-ts(c(fittedValue.fourier   ,result.fourier   ),fre=7)    
+#total.fore.tbats     <-ts(c(fittedValue.tbats     ,result.tbats     ),fre=7)    
+#total.fore.fourier   <-ts(c(fittedValue.fourier   ,result.fourier   ),fre=7)    
+#total.fore.tsw       <-ts(c(fittedValue.tsw       ,result.tsw       ),fre=7)    
 #total.fore.sam       <-ts(c(fittedValue.sam       ,result.sam       ),fre=7)    
 total.fore.hw        <-ts(c(fittedValue.hw        ,result.hw        ),fre=7)    
 total.data.xts           <-xts(total.data,seq(as.POSIXct(beginDate),len=length(total.data),by='day'))
@@ -475,15 +479,15 @@ total.fore.xts           <-xts(total.fore,seq(as.POSIXct(beginDate),len=length(t
 total.fore.tsam.xts      <-xts(total.fore.tsam      ,seq(as.POSIXct(beginDate),len=length(total.fore.tsam      ),by='day'))
 total.fore.stlf.arima.xts<-xts(total.fore.stlf.arima,seq(as.POSIXct(beginDate),len=length(total.fore.stlf.arima),by='day'))
 total.fore.stlf.ets.xts  <-xts(total.fore.stlf.ets  ,seq(as.POSIXct(beginDate),len=length(total.fore.stlf.ets  ),by='day'))
-total.fore.tbats.xts     <-xts(total.fore.tbats     ,seq(as.POSIXct(beginDate),len=length(total.fore.tbats     ),by='day'))
-total.fore.tsw.xts       <-xts(total.fore.tsw       ,seq(as.POSIXct(beginDate),len=length(total.fore.tsw       ),by='day'))
-total.fore.fourier.xts   <-xts(total.fore.fourier   ,seq(as.POSIXct(beginDate),len=length(total.fore.fourier   ),by='day'))
+#total.fore.tbats.xts     <-xts(total.fore.tbats     ,seq(as.POSIXct(beginDate),len=length(total.fore.tbats     ),by='day'))
+#total.fore.fourier.xts   <-xts(total.fore.fourier   ,seq(as.POSIXct(beginDate),len=length(total.fore.fourier   ),by='day'))
+#total.fore.tsw.xts       <-xts(total.fore.tsw       ,seq(as.POSIXct(beginDate),len=length(total.fore.tsw       ),by='day'))
 #total.fore.sam.xts       <-xts(total.fore.sam       ,seq(as.POSIXct(beginDate),len=length(total.fore.sam       ),by='day'))
 total.fore.hw.xts        <-xts(total.fore.hw        ,seq(as.POSIXct(beginDate),len=length(total.fore.hw        ),by='day'))
 
 #plot(as.zoo(cbind(total.data.xts,total.fore.tsam.xts,total.fore.stlf.arima.xts,total.fore.stlf.ets.xts,total.fore.tbats.xts,total.fore.tsw.xts,total.fore.fourier.xts,total.fore.sam.xts,total.fore.hw.xts,total.fore.xts)),col=1:9,lty=1:9,screens=1)
 #legend(x="topleft",legend=c("observed","arima+lm","stlf.arima","stlf.ets","tbats","fourier arima","wavelet arima","seasonal arima","hw","result"),lty=1:9,col=1:9)
-plot(as.zoo(cbind(total.data.xts,total.fore.tsam.xts,total.fore.stlf.arima.xts,total.fore.stlf.ets.xts,total.fore.tbats.xts,total.fore.tsw.xts,total.fore.fourier.xts,total.fore.hw.xts,total.fore.xts)),col=1:9,lty=1:9,screens=1)
-legend(x="topleft",legend=c("observed","arima+lm","stlf.arima","stlf.ets","tbats","fourier arima","wavelet arima","hw","result"),lty=1:9,col=1:9)
+plot(as.zoo(cbind(total.data.xts,total.fore.tsam.xts,total.fore.stlf.arima.xts,total.fore.stlf.ets.xts,total.fore.hw.xts,total.fore.xts)),col=c(1:6,8,9),lty=1:9,screens=1)
+legend(x="topleft",legend=c("observed","arima+lm","stlf.arima","stlf.ets","hw","result"),lty=1:9,col=c(1:6,8,9))
 #plot(as.zoo(cbind(total.data.xts,total.fore.tsam.xts)),col=1:9,lty=1:9,screens=1)
 #legend(x="topleft",legend=c("observed","arima+lm"),lty=1:9,col=1:9)

@@ -84,14 +84,12 @@ tslist<-list(total_purchase_amt,zfb1,zfb2,zfb3,bank1,bank2,bank3,share)
 type<-list("total_purchase_amt","zfb1","zfb2","zfb3","bank1","bank2","bank3","share")
 #orignal+features
 sorderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
-#middle month,quarter
-orderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0),c(0,0,0))
 #0401
 #orderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(3,0,3),c(2,1,1),c(6,1,1),c(7,0,1),c(1,1,7))
 #3.12
 #orderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(4,1,3),c(2,1,1),c(6,1,1),c(5,1,7),c(7,1,7))
 #with time
-#orderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(4,1,1),c(2,1,1),c(0,0,0),c(7,0,1),c(1,1,7))
+orderlist<-list(c(0,0,0),c(0,0,0),c(0,0,0),c(4,1,1),c(2,1,1),c(0,0,0),c(7,0,1),c(1,1,7))
 #no time
 #orderlist<-list(c(0,0,0),c(0,0,0),c(4,0,4),c(3,1,1),c(1,0,1),c(1,0,3),c(1,0,1),c(1,1,1))
 
@@ -115,12 +113,12 @@ fittedValue.hw         <-rep(0,fitend-fitbeg+1)
 #5
 #xregfit<-data.frame(of[fitbeg:fitend,2:7],of[fitbeg:fitend,8:43],of[fitbeg:fitend,46:58],of[fitbeg:fitend,61],of[fitbeg:fitend,64:74],of[fitbeg:fitend,98]);
 #xregpre<-data.frame(of[prebeg:preend,2:7],of[prebeg:preend,8:43],of[prebeg:preend,46:58],of[prebeg:preend,61],of[prebeg:preend,64:74],of[prebeg:preend,98]);
-#with time,193
-#xregfit<-data.frame(of[fitbeg:fitend,2:7],of[fitbeg:fitend,13:22],of[fitbeg:fitend,46:58],of[fitbeg:fitend,61],of[fitbeg:fitend,64:74],scale(of[fitbeg:fitend,98]));
-#xregpre<-data.frame(of[prebeg:preend,2:7],of[prebeg:preend,13:22],of[prebeg:preend,46:58],of[prebeg:preend,61],of[prebeg:preend,64:74],scale(of[prebeg:preend,98]));
-#middle month,quarter
 xregfit<-data.frame(of[fitbeg:fitend,2:7],of[fitbeg:fitend,13:22],of[fitbeg:fitend,46:58],of[fitbeg:fitend,61],of[fitbeg:fitend,64:74],scale(of[fitbeg:fitend,98]));
 xregpre<-data.frame(of[prebeg:preend,2:7],of[prebeg:preend,13:22],of[prebeg:preend,46:58],of[prebeg:preend,61],of[prebeg:preend,64:74],scale(of[prebeg:preend,98]));
+#xregfit<-data.frame(of[fitbeg:fitend,2:17],of[fitbeg:fitend,20:32],of[fitbeg:fitend,35],of[fitbeg:fitend,38:48],scale(of[fitbeg:fitend,72]));
+#xregpre<-data.frame(of[prebeg:preend,2:17],of[prebeg:preend,20:32],of[prebeg:preend,35],of[prebeg:preend,38:48],scale(of[prebeg:preend,72]));
+#xregfit<-data.frame(of[fitbeg:fitend,2:17],of[fitbeg:fitend,20:32],of[fitbeg:fitend,35],of[fitbeg:fitend,38:48]);
+#xregpre<-data.frame(of[prebeg:preend,2:17],of[prebeg:preend,20:32],of[prebeg:preend,35],of[prebeg:preend,38:48]);
 for(ti in 2:8)
 {
     cat("###arima-lm###\n")
@@ -137,16 +135,16 @@ for(ti in 2:8)
     for(si in st)
     {
         if(si==0) next;
-        #if(ti==5)
-        #{
-            #tsam<-arima(tsdata,order=or,xreg=xregfit,io=c(13,20))
-        #}else if(ti==8)
-        #{
-            #tsam<-arima(tsdata,order=or,xreg=xregfit,io=c(86))
-        #}else
-        #{
+        if(ti==5)
+        {
+            tsam<-arima(tsdata,order=or,xreg=xregfit,io=c(13,20))
+        }else if(ti==8)
+        {
+            tsam<-arima(tsdata,order=or,xreg=xregfit,io=c(86))
+        }else
+        {
             tsam<-arima(tsdata,order=or,xreg=xregfit)
-        #}
+        }
         aico<-tsam$aic;
         fixedv<-rep(NA,length(tsam$coef));
         needFix<-TRUE;
@@ -178,16 +176,16 @@ for(ti in 2:8)
             if(needFix)
             {
                 cat("Fixing...\n")
-                #if(ti==5)
-                #{
-                    #tsam<-arima(tsdata,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE,io=c(13,20))
-                #}else if(ti==8)
-                #{
+                if(ti==5)
+                {
+                    tsam<-arima(tsdata,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE,io=c(13,20))
+                }else if(ti==8)
+                {
                     tsam<-arima(tsdata,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE,io=c(86))
-                #}else
-                #{
+                }else
+                {
                     tsam<-arima(tsdata,order=or,xreg=xregfit,fixed=fixedv,transform.pars = FALSE)
-                #}
+                }
             }
         }
         ##print(tsam)
@@ -199,24 +197,24 @@ for(ti in 2:8)
         }
     }
     cat("========>",legend,"<======\n")
-    #if(ti==5)
-    #{
-        #tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE,io=c(13,20));
-        #fittedValueTmp<-fitted(tsam.bestfit)
-        #print(tsam.bestfit);
-        #tsam.bestfit$coef<-tsam.bestfit$coef[1:(length(tsam.bestfit$coef)-2)]
-    #}else if(ti==8)
-    #{
-        #tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE,io=c(86));
-        #fittedValueTmp<-fitted(tsam.bestfit)
-        #print(tsam.bestfit);
-        #tsam.bestfit$coef<-tsam.bestfit$coef[1:(length(tsam.bestfit$coef)-1)]
-    #}else
-    #{
+    if(ti==5)
+    {
+        tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE,io=c(13,20));
+        fittedValueTmp<-fitted(tsam.bestfit)
+        print(tsam.bestfit);
+        tsam.bestfit$coef<-tsam.bestfit$coef[1:(length(tsam.bestfit$coef)-2)]
+    }else if(ti==8)
+    {
+        tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE,io=c(86));
+        fittedValueTmp<-fitted(tsam.bestfit)
+        print(tsam.bestfit);
+        tsam.bestfit$coef<-tsam.bestfit$coef[1:(length(tsam.bestfit$coef)-1)]
+    }else
+    {
         tsam.bestfit<-arima(tsdata,order=or,xreg=xregfit,fixed=fixb,transform.pars = FALSE);
         fittedValueTmp<-fitted(tsam.bestfit)
         print(tsam.bestfit);
-    #}
+    }
         #acf(residuals(tsam.bestfit),lag=60)
         #pacf(residuals(tsam.bestfit),lag=60)
         #acf(diff(diff(residuals(tsam.bestfit))),lag=60) 
