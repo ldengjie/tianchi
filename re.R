@@ -7,10 +7,10 @@ library("e1071")
 od<-read.csv("redeem_by_type_sum_p2_v4.csv")
 #od<-od1+od2
 of<-read.csv("totalfs.csv")
-#fitbeg<-275;#20140401
-#beginDate<-"2014-04-01"
-fitbeg<-255;#20140312
-beginDate<-"2014-03-12"
+fitbeg<-275;#20140401
+beginDate<-"2014-04-01"
+#fitbeg<-255;#20140312
+#beginDate<-"2014-03-12"
 fitend<-427;#20140831
 prebeg<-fitend+1;
 preend<-457;#20140930
@@ -188,7 +188,7 @@ xregpre<-data.frame(of[prebeg:preend,2:7],of[prebeg:preend,13:22],of[prebeg:pree
 #xregpre<-cbind(xregpre,of[prebeg:preend,xi])
 #}
 #}
-for(ti in 3:7)
+for(ti in 7:7)
 {
     #st<-seq(0,0.4,0.05);
     st<-0.05
@@ -218,15 +218,15 @@ for(ti in 3:7)
     #cat("best svm ",bep,bco,minRmse,"\n")
     #svmf<-svm(tsdatav~.,tsv,type="eps-regression",epsilon=bep,cost=bco)
 
-    #svmf<-svm(tsdatav~.,tsv,type="eps-regression")
-    #svmf<-svm(tsdatav~.,tsv,type="eps-regression",cross = length(tsdatav),epsilon=0.4,cost=128)
-    #svmf<-svm(tsdatav~.,tsv,type="eps-regression",cross = length(tsdatav),epsilon=0,cost=512)
+    bep<-c(0.1,0.3,0,0.7,0.8,0.6,0.5)
+    bco<-c(1,64,64,8,512,512,32)
+    svmf<-svm(tsdatav~.,tsv,type="eps-regression",cross = length(tsdatav),epsilon=bep[[ti]],cost=bco[[ti]])
     #plot(as.zoo(cbind(tsdatav,fitted(svmf))),screens=1,col=1:9,lty=1:9)
 
-    tuneResult <- tune(svm, tsdatav ~ .,  data = tsv, ranges = list(epsilon = seq(0.,1,0.1), cost = 2^(2:9)),tunecontrol = tune.control(cross = length(tsdatav)))
-    print(tuneResult)
+    #tuneResult <- tune(svm, tsdatav ~ .,  data = tsv, ranges = list(epsilon = seq(0.,1,0.1), cost = 2^(2:9)),tunecontrol = tune.control(cross = length(tsdatav)))
+    #print(tuneResult)
     #plot(tuneResult)
-    svmf<- tuneResult$best.model
+    #svmf<- tuneResult$best.model
 
 
     svmp<- predict(svmf,cbind(rep(0,30),xregpre)) 
@@ -519,7 +519,7 @@ for(ti in 3:7)
               #)/4
 #
 #cat(">>>> Redeem <<<<\n")
-print(totalResult)
+#print(totalResult)
 
 total.data           <-ts(c(od[fitbeg:preend,2]),fre=7)               
 #total.fore           <-ts(c(totalFittedValue,totalResult),fre=7)    
