@@ -296,9 +296,9 @@ for(ti in 2:8)
 
     svmp<- predict(svmf, cbind(rep(0,30),xregpre)) 
     cat("----> RMSE : ",sqrt(mean(svmf$residuals^2))/mean(tsdatav),"\n")
-    result.svm<-result.svm+svmp
+    result.svm<-result.svm+svmp*monthshift*holidayshift
     fittedValue.svm<-fittedValue.svm+fitted(svmf)
-    svm.fore     <-ts(c(fitted(svmf),svmp),fre=7)    
+    svm.fore     <-ts(c(fitted(svmf),svmp*monthshift*holidayshift),fre=7)    
     svm.fore.xts     <-xts(svm.fore,seq(as.POSIXct(beginDate),len=length(svm.fore),by='day'))
     #plot(as.zoo(cbind(tsam.data.xts,svm.fore.xts)),col=1:9,lty=1:9,screens=1)
     #legend(x="topleft",legend=c("observed","svm"),lty=1:9,col=1:9)
