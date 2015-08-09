@@ -1,18 +1,19 @@
-1.Go to web to download .csv , copy address of them into download.sh,
+1.数据下载
+1.1.Go to web to download .csv , copy address of them into download.sh,
     source download.sh
+1.2.unzip user_balance_table.zip
 
-2.unzip user_balance_table.zip
-
-3.replace constellation with integer
+2.数据预处理
+2.1.replace constellation with integer
     source replaceConstellationIntoInteger.sh
 
-4. vi user_balance_table.csv
+2.2.vi user_balance_table.csv
    %s#,,#,0,#g  //more than two times
    %s#,$#,0#g
 
-5. purchase_by_type_sum_p2_v4.csv,redeem_by_type_sum_p2_v4.csv 按金额大小和频率初步细分，间隔较小，需要下面的再聚类.
+3. purchase_by_type_sum_p2_v4.csv,redeem_by_type_sum_p2_v4.csv 按金额大小和频率初步细分，间隔较小，需要下面的再聚类.
 
-6. pu_cluster.R re_cluster.R 按金额大小和频率进行聚类
+4. pu_cluster.R re_cluster.R 按金额大小和频率进行聚类
 
 - EM
 - HC
@@ -22,7 +23,7 @@
 
 综合上面的结果，进行分类
 
-7. pu.dev.R re.dev.R 开发版本，主要功能在这里设计，包含了
+5. pu.dev.R re.dev.R 开发版本，主要功能在这里设计，包含了
 
 - arima+lm,星期（1-6）+月初月末（-5，5）+节假日（-5，0，5）+6.18（-5，0，5）+春节（-5，0，5）+调休+time(1.2.3...)特征，当pq都为0时，相当于lm。加上这些特征后，arima部分相当于白噪声。循环知道每个特征和pq值95%置信度显著不为0.提取月初月末+节假日+调休特征值共后续使用。
 - stlf-arima，特征如上
@@ -35,7 +36,7 @@
 - random forest,循环mtry 1:(NCOL(xregfit)-1),找出最小的MSE,*monthshift*holidayshift
 - svm,用tune找出最优epsilon和cost,挺耗时间20min左右，存储起来以后直接调用即可,*holidayshift*monthshift
 
-8. pu.R re.R 最终版的最精简代码，用于天池平台的代码review。没有注释。
+6. pu.R re.R 最终版的最精简代码，用于天池平台的代码review。没有注释。
 
 v1 zfb:0-3 bank:0-11 from season 2 part1
 v2 zfb:0-31 bank:0-41
