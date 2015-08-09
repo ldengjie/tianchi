@@ -10,6 +10,33 @@
    %s#,,#,0,#g  //more than two times
    %s#,$#,0#g
 
+5. purchase_by_type_sum_p2_v4.csv,redeem_by_type_sum_p2_v4.csv 按金额大小和频率初步细分，间隔较小，需要下面的再聚类.
+
+6. pu_cluster.R re_cluster.R 按金额大小和频率进行聚类
+
+- EM
+- HC
+- HC-diss
+- K-MEANS
+- K-Medoids
+
+综合上面的结果，进行分类
+
+7. pu.dev.R re.dev.R 开发版本，主要功能在这里设计，包含了
+
+- arima+lm,星期（1-6）+月初月末（-5，5）+节假日（-5，0，5）+6.18（-5，0，5）+春节（-5，0，5）+调休+time(1.2.3...)特征，当pq都为0时，相当于lm。加上这些特征后，arima部分相当于白噪声。循环知道每个特征和pq值95%置信度显著不为0.提取月初月末+节假日+调休特征值共后续使用。
+- stlf-arima，特征如上
+- stlf-ets,用上面月初月末+节假日+调休特征调整,即*holidayshift*monthshift
+- tbats，periods=c(7,30.44,91.31),对应与星期、月、季度三个周期,*holidayshift*monthshift
+- arima+wavelet,小波分析，分解为3+1，重构后分别用arima+特征,最后再合并这4部分
+- arima+fourier,分为7/30.44两部分，k=3/15,这里15可改为3，即k=3/3，这样fre覆盖1：30.44,且没重合
+- seasonal arima,季节趋势arima模型，除去月末月初的特征
+- hw,平滑指数,*holidayshift*monthshift
+- random forest,循环mtry 1:(NCOL(xregfit)-1),找出最小的MSE,*monthshift*holidayshift
+- svm,用tune找出最优epsilon和cost,挺耗时间20min左右，存储起来以后直接调用即可,*holidayshift*monthshift
+
+8. pu.R re.R 最终版的最精简代码，用于天池平台的代码review。没有注释。
+
 v1 zfb:0-3 bank:0-11 from season 2 part1
 v2 zfb:0-31 bank:0-41
 v3 zfb:0-3 bank:0-3
